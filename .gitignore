@@ -1,0 +1,3 @@
+build/
+CppSDK/*
+!CppSDK/CMakeLists.txt
