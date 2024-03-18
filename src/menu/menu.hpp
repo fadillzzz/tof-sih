@@ -11,12 +11,12 @@ namespace Menu {
 
     struct FrameContext {
         ID3D12CommandAllocator *commandAllocator;
-        ID3D12Resource *resource;
-        D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle;
+        uint64_t fenceValue;
     };
 
+    static uint32_t frameIndex = 0;
+
     static uint32_t bufferCount = -1;
-    static FrameContext *frameContext;
 
     typedef HRESULT(APIENTRY *D3D12Present)(IDXGISwapChain *pSwapChain, UINT SyncInterval, UINT Flags);
     static D3D12Present oPresent = nullptr;
@@ -24,6 +24,18 @@ namespace Menu {
     typedef void(APIENTRY *ExecuteCommandLists)(ID3D12CommandQueue *queue, UINT NumCommandLists,
                                                 ID3D12CommandList *ppCommandLists);
     static ExecuteCommandLists oExecuteCommandLists = nullptr;
+
+    const uint32_t NUM_FRAMES_IN_FLIGHT = 3;
+    const uint32_t NUM_BACK_BUFFERS = 3;
+
+    static HANDLE swapChainWaitableObject = nullptr;
+    static ID3D12Fence *fence = nullptr;
+    static HANDLE fenceEvent = nullptr;
+
+    static ID3D12Resource *mainRenderTargetResource[NUM_BACK_BUFFERS] = {};
+    static D3D12_CPU_DESCRIPTOR_HANDLE mainRenderTargetDescriptor[NUM_BACK_BUFFERS] = {};
+    static FrameContext frameContext[NUM_FRAMES_IN_FLIGHT] = {};
+    static uint64_t fenceLastSignaledValue = 0;
 
     void init();
     void shutdown();
