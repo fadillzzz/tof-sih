@@ -1,7 +1,5 @@
 #include "kiero.h"
 
-#include "imgui.h"
-
 #define USE_DX12 1
 #define USE_DX11 0
 

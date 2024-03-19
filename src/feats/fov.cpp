@@ -1,9 +1,8 @@
 #include "../globals.hpp"
-#include "imgui.h"
 
 namespace Feats {
     namespace Fov {
-        static float fov = 75.0f;
+        float fov = 75.0f;
 
         void init() { return; }
 

@@ -38,4 +38,20 @@ namespace Globals {
 
         return nullptr;
     }
+
+    SDK::AQRSLPlayerCharacter *getCharacter() {
+        const auto localPlayer = getLocalPlayer();
+
+        if (localPlayer == nullptr) {
+            return nullptr;
+        }
+
+        if (localPlayer->PlayerController == nullptr) {
+            return nullptr;
+        }
+
+        const auto character = (SDK::AQRSLPlayerCharacter *)localPlayer->PlayerController->Character;
+
+        return character;
+    }
 } // namespace Globals

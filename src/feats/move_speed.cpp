@@ -1,31 +1,14 @@
 #include "move_speed.hpp"
 #include "../globals.hpp"
-#include "imgui.h"
 
 namespace Feats {
     namespace MoveSpeed {
-        static float speed = 0.0f;
-        static bool enabled = false;
-
-        SDK::AQRSLPlayerCharacter *getCharacter() {
-            const auto localPlayer = Globals::getLocalPlayer();
-
-            if (localPlayer == nullptr) {
-                return nullptr;
-            }
-
-            if (localPlayer->PlayerController == nullptr) {
-                return nullptr;
-            }
-
-            const auto character = (SDK::AQRSLPlayerCharacter *)localPlayer->PlayerController->Character;
-
-            return character;
-        }
+        float speed = 0.0f;
+        bool enabled = false;
 
         void tick() {
             if (enabled) {
-                const auto character = getCharacter();
+                const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
                     character->ClientSetMaxWalkSpeed(speed);
@@ -37,7 +20,7 @@ namespace Feats {
 
         void menu() {
             if (speed <= 0.0f) {
-                const auto character = getCharacter();
+                const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
                     speed = character->PlayMaxWalkSpeed;

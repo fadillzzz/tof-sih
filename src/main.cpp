@@ -1,4 +1,5 @@
 #include "feats/fov.hpp"
+#include "feats/inf_jump.hpp"
 #include "feats/move_speed.hpp"
 #include "globals.hpp"
 #include "menu/menu.hpp"
@@ -24,6 +25,7 @@ int MainThread(HINSTANCE hInstDLL) {
 
     registerFeature(Feats::MoveSpeed);
     registerFeature(Feats::Fov);
+    registerFeature(Feats::InfJump);
 
     while (true) {
         if (GetAsyncKeyState(VK_END) & 1) {

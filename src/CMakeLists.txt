@@ -6,6 +6,7 @@ add_library(TOFInternal SHARED
     menu/dx11_impl.cpp
     feats/move_speed.cpp
     feats/fov.cpp
+    feats/inf_jump.cpp
 )
 target_precompile_headers(TOFInternal PUBLIC pch.hpp)
 add_subdirectory(ext/imgui)
