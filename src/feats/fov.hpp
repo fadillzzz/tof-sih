@@ -1,7 +1,7 @@
 namespace Feats {
-    namespace MoveSpeed {
+    namespace Fov {
         void init();
         void tick();
         void menu();
-    } // namespace MoveSpeed
+    } // namespace Fov
 } // namespace Feats

@@ -3,6 +3,9 @@
 
 namespace Feats {
     namespace MoveSpeed {
+        static float speed = -1;
+        static bool enabled = false;
+
         void tick() {
             if (enabled) {
                 const auto world = SDK::UWorld::GetWorld();
@@ -23,7 +26,8 @@ namespace Feats {
         void init() { return; }
         void menu() {
             ImGui::Checkbox("Enabled", &enabled);
-            ImGui::SliderFloat("Speed", &speed, 1.0f, 10000.0f);
+            ImGui::SameLine();
+            ImGui::SliderFloat("Movement speed", &speed, 1.0f, 10000.0f);
         }
     } // namespace MoveSpeed
 } // namespace Feats
