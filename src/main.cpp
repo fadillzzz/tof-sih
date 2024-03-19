@@ -29,6 +29,8 @@ int MainThread(HINSTANCE hInstDLL) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    Menu::shutdown();
+
     fclose(stdout);
     FreeConsole();
     FreeLibraryAndExitThread(hInstDLL, 0);
