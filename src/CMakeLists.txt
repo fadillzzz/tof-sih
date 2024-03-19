@@ -1,5 +1,6 @@
 add_library(TOFInternal SHARED
     main.cpp
+    globals.cpp
     menu/menu.cpp
     menu/dx12_impl.cpp
     menu/dx11_impl.cpp

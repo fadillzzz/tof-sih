@@ -41,10 +41,7 @@ namespace Menu {
 #endif
     }
 
-    void registerMenu(void *func) {
-        menuToRender.push_back(func);
-        std::cout << menuToRender.size() << std::endl;
-    }
+    void registerMenu(void *func) { menuToRender.push_back(func); }
 
     std::vector<void *> getRegisteredMenu() { return menuToRender; }
 

@@ -1,5 +1,6 @@
 #include "feats/fov.hpp"
 #include "feats/move_speed.hpp"
+#include "globals.hpp"
 #include "menu/menu.hpp"
 
 std::vector<void *> registeredFeatures;
@@ -13,6 +14,11 @@ int MainThread(HINSTANCE hInstDLL) {
     AllocConsole();
     freopen_s((FILE **)stdout, "CONOUT$", "w", stdout);
     std::cout << "Initializing..." << std::endl;
+
+    while (Globals::getInstance() == nullptr) {
+        std::cout << "Waiting for game instance..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
 
     Menu::init();
 

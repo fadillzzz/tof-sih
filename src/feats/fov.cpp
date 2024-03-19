@@ -1,3 +1,4 @@
+#include "../globals.hpp"
 #include "imgui.h"
 
 namespace Feats {
@@ -6,25 +7,23 @@ namespace Feats {
 
         void init() { return; }
 
-        void tick() { return; }
+        void tick() {
+            const auto world = Globals::getWorld();
 
-        void menu() {
+            if (world != nullptr) {
+                const auto localPlayer = Globals::getLocalPlayer();
 
-            if (ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f)) {
-                const auto engine = (SDK::UHottaGameEngine *)SDK::UEngine::GetEngine();
+                if (localPlayer != nullptr && localPlayer->PlayerController != nullptr &&
+                    localPlayer->PlayerController->PlayerCameraManager != nullptr) {
+                    const auto cameraManager = localPlayer->PlayerController->PlayerCameraManager;
 
-                if (engine != nullptr) {
-                    const auto localPlayers = engine->GameInstance->LocalPlayers;
-
-                    if (localPlayers.Num() > 0) {
-                        const auto localPlayer = (SDK::UQRSLLocalPlayer *)localPlayers[0];
-                        const auto cameraManager =
-                            (SDK::AHottaPlayerCameraManager *)localPlayer->PlayerController->PlayerCameraManager;
-
-                        cameraManager->GMSetFOV(fov);
+                    if (cameraManager->GetName().find("BP_CameraManager_C") != std::string::npos) {
+                        ((SDK::ABP_CameraManager_C *)cameraManager)->GMSetFOV(fov);
                     }
                 }
             }
         }
+
+        void menu() { ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f); }
     } // namespace Fov
 } // namespace Feats

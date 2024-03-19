@@ -1,30 +1,49 @@
 #include "move_speed.hpp"
+#include "../globals.hpp"
 #include "imgui.h"
 
 namespace Feats {
     namespace MoveSpeed {
-        static float speed = -1;
+        static float speed = 0.0f;
         static bool enabled = false;
+
+        SDK::AQRSLPlayerCharacter *getCharacter() {
+            const auto localPlayer = Globals::getLocalPlayer();
+
+            if (localPlayer == nullptr) {
+                return nullptr;
+            }
+
+            if (localPlayer->PlayerController == nullptr) {
+                return nullptr;
+            }
+
+            const auto character = (SDK::AQRSLPlayerCharacter *)localPlayer->PlayerController->Character;
+
+            return character;
+        }
 
         void tick() {
             if (enabled) {
-                const auto world = SDK::UWorld::GetWorld();
+                const auto character = getCharacter();
 
-                if (world != nullptr) {
-                    const auto instance = world->OwningGameInstance;
-
-                    if (instance->LocalPlayers.Num() > 0) {
-                        const auto localPlayer = (SDK::UQRSLLocalPlayer *)instance->LocalPlayers[0];
-
-                        const auto character = (SDK::AQRSLPlayerCharacter *)localPlayer->PlayerController->Character;
-
-                        character->ClientSetMaxWalkSpeed(speed);
-                    }
+                if (character != nullptr) {
+                    character->ClientSetMaxWalkSpeed(speed);
                 }
             }
         }
+
         void init() { return; }
+
         void menu() {
+            if (speed <= 0.0f) {
+                const auto character = getCharacter();
+
+                if (character != nullptr) {
+                    speed = character->PlayMaxWalkSpeed;
+                }
+            }
+
             ImGui::Checkbox("Enabled", &enabled);
             ImGui::SameLine();
             ImGui::SliderFloat("Movement speed", &speed, 1.0f, 10000.0f);
