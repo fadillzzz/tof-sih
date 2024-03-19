@@ -1,4 +1,12 @@
+#include "feats/move_speed.hpp"
 #include "menu/menu.hpp"
+
+std::vector<void *> registeredFeatures;
+
+#define registerFeature(name)                                                                                          \
+    name::init();                                                                                                      \
+    Menu::registerMenu((void *)name::menu);                                                                            \
+    registeredFeatures.push_back((void *)name::tick);
 
 int MainThread(HINSTANCE hInstDLL) {
     AllocConsole();
@@ -7,9 +15,15 @@ int MainThread(HINSTANCE hInstDLL) {
 
     Menu::init();
 
+    registerFeature(Feats::MoveSpeed);
+
     while (true) {
         if (GetAsyncKeyState(VK_END) & 1) {
             break;
+        }
+
+        for (auto &feature : registeredFeatures) {
+            ((void (*)())feature)();
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
