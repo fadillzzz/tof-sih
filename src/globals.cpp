@@ -9,20 +9,20 @@ namespace Globals {
         return engine;
     }
 
-    SDK::UGameInstance *getInstance() {
+    SDK::UHottaGameInstance *getInstance() {
         if (getEngine() != nullptr) {
-            return engine->GameInstance;
+            return (SDK::UHottaGameInstance *)engine->GameInstance;
         }
 
         return nullptr;
     }
 
-    SDK::UHottaLocalPlayer *getLocalPlayer() {
+    SDK::UQRSLLocalPlayer *getLocalPlayer() {
         if (getInstance() != nullptr) {
             const auto localPlayers = getInstance()->LocalPlayers;
 
             if (localPlayers.Num() > 0) {
-                return (SDK::UHottaLocalPlayer *)localPlayers[0];
+                return (SDK::UQRSLLocalPlayer *)localPlayers[0];
             }
         }
 

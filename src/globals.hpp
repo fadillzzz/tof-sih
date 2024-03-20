@@ -1,7 +1,7 @@
 namespace Globals {
     SDK::UHottaGameEngine *getEngine();
-    SDK::UGameInstance *getInstance();
+    SDK::UHottaGameInstance *getInstance();
     SDK::UWorld *getWorld();
-    SDK::UHottaLocalPlayer *getLocalPlayer();
+    SDK::UQRSLLocalPlayer *getLocalPlayer();
     SDK::AQRSLPlayerCharacter *getCharacter();
 } // namespace Globals

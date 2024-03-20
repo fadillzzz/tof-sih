@@ -7,6 +7,7 @@ add_library(TOFInternal SHARED
     feats/move_speed.cpp
     feats/fov.cpp
     feats/inf_jump.cpp
+    feats/login.cpp
 )
 target_precompile_headers(TOFInternal PUBLIC pch.hpp)
 add_subdirectory(ext/imgui)
