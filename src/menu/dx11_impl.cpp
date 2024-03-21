@@ -25,8 +25,12 @@ namespace Menu {
                 ID3D11Device *device;
                 pSwapChain->GetDevice(__uuidof(ID3D11Device), (void **)&device);
 
-                ID3D11DeviceContext *context;
                 device->GetImmediateContext(&context);
+
+                ID3D11Texture2D *backBuffer;
+                pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&backBuffer);
+                device->CreateRenderTargetView(backBuffer, NULL, &mainRenderTargetView);
+                backBuffer->Release();
 
                 ImGui::CreateContext();
                 ImGuiIO &io = ImGui::GetIO();
@@ -42,28 +46,31 @@ namespace Menu {
                 wndProc = (WNDPROC)SetWindowLongPtr((HWND)desc.OutputWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
             }
 
+            ImGui::GetIO().MouseDrawCursor = showMenu;
+
             if (initialized) {
                 if (GetAsyncKeyState(VK_INSERT) & 1) {
                     showMenu = !showMenu;
                 }
             }
 
-            ImGui_ImplDX11_NewFrame();
-            ImGui_ImplWin32_NewFrame();
-            ImGui::NewFrame();
+            if (showMenu) {
+                ImGui_ImplDX11_NewFrame();
+                ImGui_ImplWin32_NewFrame();
+                ImGui::NewFrame();
 
-            ImGui::GetIO().MouseDrawCursor = showMenu;
+                ImGui::Begin("Menu", &showMenu);
 
-            ImGui::Begin("Menu", &showMenu);
+                for (auto &func : getRegisteredMenu()) {
+                    ((void (*)())func)();
+                }
 
-            for (auto &func : getRegisteredMenu()) {
-                ((void (*)())func)();
+                ImGui::End();
+
+                ImGui::Render();
+                context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
+                ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
             }
-
-            ImGui::End();
-
-            ImGui::Render();
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
             return present(pSwapChain, SyncInterval, Flags);
         }

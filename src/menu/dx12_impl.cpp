@@ -111,6 +111,8 @@ namespace Menu {
                 }
             }
 
+            ImGui::GetIO().MouseDrawCursor = showMenu;
+
             if (initialized) {
                 if (GetAsyncKeyState(VK_INSERT) & 1) {
                     showMenu = !showMenu;
@@ -121,8 +123,6 @@ namespace Menu {
                 ImGui_ImplDX12_NewFrame();
                 ImGui_ImplWin32_NewFrame();
                 ImGui::NewFrame();
-
-                ImGui::GetIO().MouseDrawCursor = showMenu;
 
                 ImGui::Begin("Menu", &showMenu);
 
