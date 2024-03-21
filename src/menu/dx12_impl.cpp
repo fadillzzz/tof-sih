@@ -180,10 +180,24 @@ namespace Menu {
             oExecuteCommandLists(queue, NumCommandLists, ppCommandLists);
         }
 
-        void init() {
-            kiero::init(kiero::RenderType::D3D12);
-            kiero::bind(140, (void **)&oPresent, hookPresent);
-            kiero::bind(54, (void **)&oExecuteCommandLists, hookExecuteCommandLists);
+        bool init() {
+            if (kiero::init(kiero::RenderType::D3D12) == kiero::Status::Success) {
+                kiero::bind(54, (void **)&oExecuteCommandLists, hookExecuteCommandLists);
+
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+
+                if (commandQueue == nullptr) {
+                    kiero::unbind(54);
+                    kiero::shutdown();
+                    return false;
+                }
+
+                kiero::bind(140, (void **)&oPresent, hookPresent);
+
+                return true;
+            }
+
+            return false;
         }
 
         void shutdown() {

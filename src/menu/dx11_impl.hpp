@@ -9,7 +9,7 @@ namespace Menu {
         static ID3D11DeviceContext *context = nullptr;
         static ID3D11RenderTargetView *mainRenderTargetView = nullptr;
 
-        void init();
+        bool init();
         void shutdown();
     } // namespace DX11
 } // namespace Menu

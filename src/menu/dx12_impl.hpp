@@ -38,7 +38,7 @@ namespace Menu {
         static FrameContext frameContext[NUM_FRAMES_IN_FLIGHT] = {};
         static uint64_t fenceLastSignaledValue = 0;
 
-        void init();
+        bool init();
         void shutdown();
     } // namespace DX12
 } // namespace Menu

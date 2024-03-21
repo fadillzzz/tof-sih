@@ -75,9 +75,11 @@ namespace Menu {
             return present(pSwapChain, SyncInterval, Flags);
         }
 
-        void init() {
+        bool init() {
             kiero::init(kiero::RenderType::D3D11);
             kiero::bind(8, (void **)&present, (void *)hookPresent);
+
+            return true;
         }
 
         void shutdown() {
