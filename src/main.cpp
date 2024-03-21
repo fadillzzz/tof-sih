@@ -1,6 +1,7 @@
 #include "feats/fov.hpp"
 #include "feats/inf_jump.hpp"
 #include "feats/login.hpp"
+#include "feats/quest.hpp"
 #include "feats/move_speed.hpp"
 #include "feats/teleport_nucleus.hpp"
 #include "globals.hpp"
@@ -29,6 +30,7 @@ int MainThread(HINSTANCE hInstDLL) {
     registerFeature(Feats::Fov);
     registerFeature(Feats::InfJump);
     registerFeature(Feats::TeleportNucleus);
+    registerFeature(Feats::Quest);
     registerFeature(Feats::Login);
 
     while (true) {
