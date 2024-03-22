@@ -7,13 +7,17 @@ namespace Feats {
         float speed = 0.0f;
         bool enabled = false;
 
+        void applySpeed(float newSpeed) {
+            const auto character = Globals::getCharacter();
+
+            if (character != nullptr && !character->IsMountCharacter()) {
+                character->ClientSetMaxWalkSpeed(newSpeed);
+            }
+        }
+
         void tick() {
             if (enabled) {
-                const auto character = Globals::getCharacter();
-
-                if (character != nullptr) {
-                    character->ClientSetMaxWalkSpeed(speed);
-                }
+                applySpeed(speed);
             }
         }
 
@@ -31,11 +35,7 @@ namespace Feats {
 
             if (ImGui::Checkbox("Enabled", &enabled)) {
                 if (!enabled) {
-                    const auto character = Globals::getCharacter();
-
-                    if (character != nullptr) {
-                        character->ClientSetMaxWalkSpeed(defaultSpeed);
-                    }
+                    applySpeed(defaultSpeed);
                 }
             }
 

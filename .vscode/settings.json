@@ -65,5 +65,8 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp"
-    }
+    },
+    "cmake.preferredGenerators": [
+        "Visual Studio 17 2022"
+    ]
 }
