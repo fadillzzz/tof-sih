@@ -1,5 +1,4 @@
 {
-    "cmake.configureOnOpen": true,
     "files.associations": {
         "algorithm": "cpp",
         "cmath": "cpp",
