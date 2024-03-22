@@ -3,6 +3,7 @@
 
 namespace Feats {
     namespace MoveSpeed {
+        float defaultSpeed = 0.0f;
         float speed = 0.0f;
         bool enabled = false;
 
@@ -24,10 +25,20 @@ namespace Feats {
 
                 if (character != nullptr) {
                     speed = character->PlayMaxWalkSpeed;
+                    defaultSpeed = speed;
                 }
             }
 
-            ImGui::Checkbox("Enabled", &enabled);
+            if (ImGui::Checkbox("Enabled", &enabled)) {
+                if (!enabled) {
+                    const auto character = Globals::getCharacter();
+
+                    if (character != nullptr) {
+                        character->ClientSetMaxWalkSpeed(defaultSpeed);
+                    }
+                }
+            }
+
             ImGui::SameLine();
             ImGui::SliderFloat("Movement speed", &speed, 1.0f, 10000.0f);
         }
