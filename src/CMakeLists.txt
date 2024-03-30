@@ -12,6 +12,7 @@ add_library(TOFInternal SHARED
     feats/login.cpp
     feats/teleport_nucleus.cpp
     feats/quest.cpp
+    feats/teleport_anywhere.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)

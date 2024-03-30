@@ -1,8 +1,10 @@
+#include "feats/anti_anti_cheat.hpp"
 #include "feats/fov.hpp"
 #include "feats/inf_jump.hpp"
 #include "feats/login.hpp"
 #include "feats/move_speed.hpp"
 #include "feats/quest.hpp"
+#include "feats/teleport_anywhere.hpp"
 #include "feats/teleport_nucleus.hpp"
 #include "globals.hpp"
 #include "hooks.hpp"
@@ -28,12 +30,14 @@ int MainThread(HINSTANCE hInstDLL) {
     Menu::init();
     Hooks::init();
 
+    registerFeature(Feats::AntiAntiCheat);
     registerFeature(Feats::MoveSpeed);
     registerFeature(Feats::Fov);
     registerFeature(Feats::InfJump);
     registerFeature(Feats::TeleportNucleus);
     registerFeature(Feats::Quest);
     registerFeature(Feats::Login);
+    registerFeature(Feats::TeleportAnywhere);
 
     while (true) {
         if (GetAsyncKeyState(VK_END) & 1) {
