@@ -1,10 +1,11 @@
 #include "feats/fov.hpp"
 #include "feats/inf_jump.hpp"
 #include "feats/login.hpp"
-#include "feats/quest.hpp"
 #include "feats/move_speed.hpp"
+#include "feats/quest.hpp"
 #include "feats/teleport_nucleus.hpp"
 #include "globals.hpp"
+#include "hooks.hpp"
 #include "menu/menu.hpp"
 
 std::vector<void *> registeredFeatures;
@@ -25,6 +26,7 @@ int MainThread(HINSTANCE hInstDLL) {
     }
 
     Menu::init();
+    Hooks::init();
 
     registerFeature(Feats::MoveSpeed);
     registerFeature(Feats::Fov);
@@ -45,6 +47,7 @@ int MainThread(HINSTANCE hInstDLL) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    Hooks::shutdown();
     Menu::shutdown();
 
     fclose(stdout);

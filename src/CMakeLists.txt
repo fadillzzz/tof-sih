@@ -1,9 +1,11 @@
 add_library(TOFInternal SHARED
     main.cpp
     globals.cpp
+    hooks.cpp
     menu/menu.cpp
     menu/dx12_impl.cpp
     menu/dx11_impl.cpp
+    feats/anti_anti_cheat.cpp
     feats/move_speed.cpp
     feats/fov.cpp
     feats/inf_jump.cpp
