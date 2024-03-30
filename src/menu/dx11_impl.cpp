@@ -54,11 +54,11 @@ namespace Menu {
                 }
             }
 
-            if (showMenu) {
-                ImGui_ImplDX11_NewFrame();
-                ImGui_ImplWin32_NewFrame();
-                ImGui::NewFrame();
+            ImGui_ImplDX11_NewFrame();
+            ImGui_ImplWin32_NewFrame();
+            ImGui::NewFrame();
 
+            if (showMenu) {
                 ImGui::Begin("Menu", &showMenu);
 
                 for (auto &func : getRegisteredMenu()) {
@@ -66,11 +66,11 @@ namespace Menu {
                 }
 
                 ImGui::End();
-
-                ImGui::Render();
-                context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
-                ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
             }
+
+            ImGui::Render();
+            context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
+            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
             return present(pSwapChain, SyncInterval, Flags);
         }

@@ -119,18 +119,20 @@ namespace Menu {
                 }
             }
 
-            if (showMenu && commandQueue != nullptr) {
+            if (commandQueue != nullptr) {
                 ImGui_ImplDX12_NewFrame();
                 ImGui_ImplWin32_NewFrame();
                 ImGui::NewFrame();
 
-                ImGui::Begin("Menu", &showMenu);
+                if (showMenu) {
+                    ImGui::Begin("Menu", &showMenu);
 
-                for (auto &func : getRegisteredMenu()) {
-                    ((void (*)())func)();
+                    for (auto &func : getRegisteredMenu()) {
+                        ((void (*)())func)();
+                    }
+
+                    ImGui::End();
                 }
-
-                ImGui::End();
 
                 ImGui::Render();
 
