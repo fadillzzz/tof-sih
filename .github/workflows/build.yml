@@ -1,12 +1,11 @@
 name: Build
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+    workflow_dispatch:
+        inputs:
+          sdk_link:
+            description: "Link to SDK (zip file): "
+            required: true
 
 jobs:
     build:
@@ -16,11 +15,16 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
 
+            - name: Download SDK
+              run: |
+                    $sdk_link = ${{ github.event.inputs.sdk_link }}
+                    Invoke-WebRequest -Uri $sdk_link -OutFile sdk.zip
+                    Expand-Archive -Path sdk.zip -DestinationPath CppSDK
+
             - name: Set up MSVC environment
               uses: microsoft/setup-msbuild@v1.0.0
 
-            - name: Install CMake
-              uses: kitware/setup-cmake@v1.4.0
+            - uses: lukka/get-cmake@latest
 
             - name: Configure CMake
               run: cmake -B build -S .
