@@ -1,0 +1,42 @@
+name: Build
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+              with:
+                  submodules: 'recursive'
+
+            - name: Download SDK
+              run: |
+                    $sdk_link = "${{ vars.SDK_LINK }}"
+                    Invoke-WebRequest -Uri $sdk_link -OutFile sdk.zip
+                    Expand-Archive -Path sdk.zip -DestinationPath CppSDK
+
+            - name: Set up MSVC environment
+              uses: microsoft/setup-msbuild@v2
+
+            - uses: lukka/get-cmake@latest
+
+            - name: Configure CMake
+              run: cmake -B build -S .
+
+            - name: Build project
+              run: cmake --build build --config Release
+
+            - name: Archive artifacts
+              uses: actions/upload-artifact@v2
+              with:
+                  name: TOFInternal.dll
+                  path: build/src/Release/TOFInternal.dll
