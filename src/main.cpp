@@ -8,6 +8,7 @@
 #include "feats/teleport_nucleus.hpp"
 #include "globals.hpp"
 #include "hooks.hpp"
+#include "logger/logger.hpp"
 #include "menu/menu.hpp"
 
 std::vector<void *> registeredFeatures;
@@ -18,14 +19,16 @@ std::vector<void *> registeredFeatures;
     registeredFeatures.push_back((void *)name::tick);
 
 int MainThread(HINSTANCE hInstDLL) {
-    AllocConsole();
-    freopen_s((FILE **)stdout, "CONOUT$", "w", stdout);
-    std::cout << "Initializing..." << std::endl;
+    Logger::init();
+
+    Logger::info("Initializing...");
 
     while (Globals::getInstance() == nullptr) {
-        std::cout << "Waiting for game instance..." << std::endl;
+        Logger::info("Waiting for game instance...");
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
+
+    Logger::success("Game instance found!");
 
     Menu::init();
     Hooks::init();
@@ -54,8 +57,7 @@ int MainThread(HINSTANCE hInstDLL) {
     Hooks::shutdown();
     Menu::shutdown();
 
-    fclose(stdout);
-    FreeConsole();
+    Logger::shutdown();
     FreeLibraryAndExitThread(hInstDLL, 0);
 
     return 0;

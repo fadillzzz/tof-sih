@@ -1,4 +1,5 @@
 #include "hooks.hpp"
+#include "logger/logger.hpp"
 #include "minhook/include/MinHook.h"
 
 namespace Hooks {
@@ -19,7 +20,7 @@ namespace Hooks {
                 const auto result = handler(pObject, pFunction, pParams);
 
                 if (result == STOP_EXECUTION) {
-                    std::cout << "Execution for " << functionName << " was stopped" << std::endl;
+                    Logger::warning("Execution for " + functionName + " was stopped");
                     return;
                 }
             }

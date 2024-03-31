@@ -1,5 +1,6 @@
 #include "anti_anti_cheat.hpp"
 #include "../hooks.hpp"
+#include "../logger/logger.hpp"
 
 namespace Feats {
     namespace AntiAntiCheat {
@@ -11,11 +12,11 @@ namespace Feats {
                                        "HottaFramework.HottaPlayerCharacter.ServerRecordHarvestedItem"};
 
             for (const auto &funcName : funcNames) {
-                Hooks::registerHook(
-                    funcName, [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
-                        std::cout << "Blocking anticheat function: " << pFunction->GetFullName() << std::endl;
-                        return Hooks::STOP_EXECUTION;
-                    });
+                Hooks::registerHook(funcName,
+                                    [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
+                                        Logger::success("Blocking anticheat function: " + pFunction->GetFullName());
+                                        return Hooks::STOP_EXECUTION;
+                                    });
             }
         }
 
