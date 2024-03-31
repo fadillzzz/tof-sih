@@ -23,7 +23,7 @@ jobs:
                     Expand-Archive -Path sdk.zip -DestinationPath CppSDK
 
             - name: Set up MSVC environment
-              uses: microsoft/setup-msbuild@v1.0.0
+              uses: microsoft/setup-msbuild@v2
 
             - uses: lukka/get-cmake@latest
 
