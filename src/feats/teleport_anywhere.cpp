@@ -18,6 +18,9 @@ namespace Feats {
                                         auto rotation = character->K2_GetActorRotation();
                                         typedParams->InWorldLocation.Z = zAxis;
 
+                                        const auto typedObject = (SDK::UUI_OverviewMapContainer_WarFog_BP_C *)pObject;
+                                        typedObject->RemoveFromParent();
+
                                         character->TeleportWithLoading(typedParams->InWorldLocation, rotation);
                                     }
 

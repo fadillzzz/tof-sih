@@ -4,4 +4,5 @@ add_library(CppSDK
     SDK/QRSL_functions.cpp
     SDK/Engine_functions.cpp
     SDK/HottaFramework_functions.cpp
+    SDK/UMG_functions.cpp
 )
