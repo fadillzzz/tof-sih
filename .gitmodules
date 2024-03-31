@@ -3,4 +3,4 @@
 	url = git@github.com:ocornut/imgui.git
 [submodule "kiero"]
 	path = kiero
-	url = git@github.com:Rebzzel/kiero.git
+	url = git@github.com:fadillzzz/kiero.git
