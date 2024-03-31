@@ -13,7 +13,6 @@ namespace Logger {
     }
 
     void shutdown() {
-        HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
         fclose(stdout);
         FreeConsole();
     }
