@@ -12,9 +12,13 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 namespace Menu {
     namespace DX12 {
         LRESULT APIENTRY WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-            if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) {
+            ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+
+            ImGuiIO &io = ImGui::GetIO();
+            if (io.WantCaptureMouse || io.WantCaptureKeyboard || io.WantTextInput) {
                 return true;
             }
+
             return CallWindowProc(wndProc, hwnd, uMsg, wParam, lParam);
         }
 
