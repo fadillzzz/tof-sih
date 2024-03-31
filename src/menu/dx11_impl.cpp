@@ -1,3 +1,4 @@
+#include "../logger/logger.hpp"
 #include "kiero.h"
 
 #include "backends/imgui_impl_dx11.h"
@@ -41,7 +42,7 @@ namespace Menu {
 
                 initialized = true;
 
-                std::cout << "Menu initialized with D3D11 backend" << std::endl;
+                Logger::success("Menu initialized with D3D11 backend");
 
                 wndProc = (WNDPROC)SetWindowLongPtr((HWND)desc.OutputWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
             }
