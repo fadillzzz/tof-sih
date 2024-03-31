@@ -1,12 +1,12 @@
 name: Build
 
 on:
+    push:
+        branches:
+            - main
     pull_request:
-    workflow_dispatch:
-        inputs:
-          sdk_link:
-            description: "Link to SDK (zip file): "
-            required: true
+        branches:
+            - main
 
 jobs:
     build:
@@ -20,7 +20,7 @@ jobs:
 
             - name: Download SDK
               run: |
-                    $sdk_link = "https://cdn.discordapp.com/attachments/437459134355603458/1224013492802162880/CppSDK.zip?ex=661bf265&is=66097d65&hm=c63c2367f75da77086f47bd02f7ac6192ce956af4e249cf5d330029cf278eec0&"
+                    $sdk_link = "${{ env.SDK_LINK }}"
                     Invoke-WebRequest -Uri $sdk_link -OutFile sdk.zip
                     Expand-Archive -Path sdk.zip -DestinationPath CppSDK
 
