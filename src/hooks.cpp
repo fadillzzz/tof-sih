@@ -41,6 +41,8 @@ namespace Hooks {
         const auto base = SDK::InSDKUtils::GetImageBase();
 
         MH_DisableHook((LPVOID)(base + SDK::Offsets::ProcessEvent));
+        MH_RemoveHook((LPVOID)(base + SDK::Offsets::ProcessEvent));
+        MH_Uninitialize();
     }
 
     void registerHook(std::string functionName, Callback handler) {

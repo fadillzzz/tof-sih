@@ -11,6 +11,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace Menu {
     namespace DX12 {
+        HWND window = nullptr;
+
         LRESULT APIENTRY WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
 
@@ -112,6 +114,7 @@ namespace Menu {
 
                     Logger::success("Menu initialized with D3D12 backend");
 
+                    window = windowHandle;
                     wndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWLP_WNDPROC, (LONG_PTR)WndProc);
                 }
             }
@@ -211,6 +214,7 @@ namespace Menu {
             kiero::unbind(140);
             kiero::unbind(54);
             kiero::shutdown();
+            SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)wndProc);
 
             ImGui_ImplDX12_Shutdown();
             ImGui_ImplWin32_Shutdown();

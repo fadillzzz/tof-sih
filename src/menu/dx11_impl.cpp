@@ -11,6 +11,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace Menu {
     namespace DX11 {
+        HWND window = nullptr;
+
         LRESULT APIENTRY WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
 
@@ -48,6 +50,7 @@ namespace Menu {
 
                 Logger::success("Menu initialized with D3D11 backend");
 
+                window = desc.OutputWindow;
                 wndProc = (WNDPROC)SetWindowLongPtr((HWND)desc.OutputWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
             }
 
@@ -90,6 +93,7 @@ namespace Menu {
         void shutdown() {
             kiero::unbind(8);
             kiero::shutdown();
+            SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)wndProc);
 
             ImGui_ImplDX11_Shutdown();
             ImGui_ImplWin32_Shutdown();
