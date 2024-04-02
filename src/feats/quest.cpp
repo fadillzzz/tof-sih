@@ -1,5 +1,6 @@
 #include "quest.hpp"
 #include "../globals.hpp"
+#include "../logger/logger.hpp"
 #include <regex>
 
 namespace Feats {
@@ -44,13 +45,19 @@ namespace Feats {
             ImGui::SameLine();
 
             if (ImGui::Button("Complete Daily")) {
+                // Vera daily bounties
                 completeQuestsWithFilter(std::regex("rv\\d{6}"));
+                // Domain 9 daily bounties
+                completeQuestsWithFilter(std::regex("jy\\d{6}"));
             }
 
             ImGui::SameLine();
 
             if (ImGui::Button("Complete Weekly")) {
+                // Weekly activities
                 completeQuestsWithFilter(std::regex("[aA]ctivityquest\\d{3}"));
+                // Crew missions
+                completeQuestsWithFilter(std::regex("gh\\d{6}"));
             }
 
             ImGui::SameLine();
