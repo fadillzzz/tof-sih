@@ -45,6 +45,8 @@ namespace Feats {
             ImGui::SameLine();
 
             if (ImGui::Button("Complete Daily")) {
+                // Aesperia daily bounties
+                completeQuestsWithFilter(std::regex("q\\d{6}"));
                 // Vera daily bounties
                 completeQuestsWithFilter(std::regex("rv\\d{6}"));
                 // Domain 9 daily bounties
