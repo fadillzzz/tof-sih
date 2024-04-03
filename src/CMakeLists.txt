@@ -17,6 +17,7 @@ add_library(TOFInternal SHARED
     feats/quest.cpp
     feats/teleport_anywhere.cpp
     feats/chain_logging.cpp
+    feats/rapid_attack.cpp
     feats/no_clip.cpp
     feats/uid_edit.cpp
     feats/about.cpp

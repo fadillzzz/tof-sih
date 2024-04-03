@@ -6,6 +6,7 @@
 #include "feats/move_speed.hpp"
 #include "feats/no_clip.hpp"
 #include "feats/quest.hpp"
+#include "feats/rapid_attack.hpp"
 #include "feats/teleport_anywhere.hpp"
 #include "feats/teleport_nucleus.hpp"
 #include "feats/uid_edit.hpp"
@@ -44,6 +45,7 @@ int MainThread(HINSTANCE hInstDLL) {
     registerFeature(Feats::Login);
     registerFeature(Feats::TeleportAnywhere);
     registerFeature(Feats::ChainLogging);
+    registerFeature(Feats::RapidAttack);
     registerFeature(Feats::NoClip);
     registerFeature(Feats::UidEdit);
 
