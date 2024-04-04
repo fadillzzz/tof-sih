@@ -1,7 +1,5 @@
 namespace Menu {
     namespace DX12 {
-        static bool showMenu = false;
-        static bool initialized = false;
         static HWND windowHandle = nullptr;
         static WNDPROC wndProc;
         static ID3D12Device *device = nullptr;

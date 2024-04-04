@@ -1,8 +1,8 @@
 #pragma once
 
 namespace Menu {
+    extern bool initialized;
     void init();
     void shutdown();
-    void registerMenu(void *func);
-    std::vector<void *> getRegisteredMenu();
+    void render();
 } // namespace Menu

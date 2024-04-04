@@ -15,7 +15,6 @@ std::vector<void *> registeredFeatures;
 
 #define registerFeature(name)                                                                                          \
     name::init();                                                                                                      \
-    Menu::registerMenu((void *)name::menu);                                                                            \
     registeredFeatures.push_back((void *)name::tick);
 
 int MainThread(HINSTANCE hInstDLL) {

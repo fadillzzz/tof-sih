@@ -3,11 +3,14 @@
 #include "dx11_impl.hpp"
 #include "dx12_impl.hpp"
 
+#include "../logger/logger.hpp"
+#include "layout/layout.hpp"
 #include "menu.hpp"
 
 namespace Menu {
-    std::vector<void *> menuToRender;
     bool isUsingDx12 = false;
+    bool showMenu = false;
+    bool initialized = false;
 
     void init() {
         if (DX12::init()) {
@@ -25,8 +28,22 @@ namespace Menu {
         }
     }
 
-    void registerMenu(void *func) { menuToRender.push_back(func); }
+    void render() {
+        ImGui::GetIO().MouseDrawCursor = showMenu;
 
-    std::vector<void *> getRegisteredMenu() { return menuToRender; }
+        if (initialized) {
+            if (GetAsyncKeyState(VK_INSERT) & 1) {
+                showMenu = !showMenu;
+            }
+        }
+
+        if (showMenu) {
+            ImGui::Begin("TOF-SIH", &showMenu);
+
+            Menu::Layout::render();
+
+            ImGui::End();
+        }
+    }
 
 } // namespace Menu

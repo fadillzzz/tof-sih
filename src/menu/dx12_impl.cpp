@@ -56,7 +56,7 @@ namespace Menu {
         }
 
         HRESULT APIENTRY hookPresent(IDXGISwapChain3 *pSwapChain, UINT SyncInterval, UINT Flags) {
-            if (!initialized) {
+            if (!Menu::initialized) {
                 if (SUCCEEDED(pSwapChain->GetDevice(__uuidof(ID3D12Device), (void **)&device))) {
                     ImGui::CreateContext();
                     ImGuiIO &io = ImGui::GetIO();
@@ -110,7 +110,7 @@ namespace Menu {
                                         descriptorHeapImGuiRender->GetCPUDescriptorHandleForHeapStart(),
                                         descriptorHeapImGuiRender->GetGPUDescriptorHandleForHeapStart());
 
-                    initialized = true;
+                    Menu::initialized = true;
 
                     Logger::success("Menu initialized with D3D12 backend");
 
@@ -119,28 +119,12 @@ namespace Menu {
                 }
             }
 
-            ImGui::GetIO().MouseDrawCursor = showMenu;
-
-            if (initialized) {
-                if (GetAsyncKeyState(VK_INSERT) & 1) {
-                    showMenu = !showMenu;
-                }
-            }
-
             if (commandQueue != nullptr) {
                 ImGui_ImplDX12_NewFrame();
                 ImGui_ImplWin32_NewFrame();
                 ImGui::NewFrame();
 
-                if (showMenu) {
-                    ImGui::Begin("Menu", &showMenu);
-
-                    for (auto &func : getRegisteredMenu()) {
-                        ((void (*)())func)();
-                    }
-
-                    ImGui::End();
-                }
+                Menu::render();
 
                 ImGui::Render();
 
