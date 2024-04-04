@@ -4,6 +4,7 @@ add_library(TOFInternal SHARED
     hooks.cpp
     logger/logger.cpp
     menu/menu.cpp
+    menu/layout/layout.cpp
     menu/dx12_impl.cpp
     menu/dx11_impl.cpp
     feats/anti_anti_cheat.cpp

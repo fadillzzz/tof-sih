@@ -25,7 +25,7 @@ namespace Menu {
         }
 
         long __stdcall hookPresent(IDXGISwapChain *pSwapChain, UINT SyncInterval, UINT Flags) {
-            if (!initialized) {
+            if (!Menu::initialized) {
                 DXGI_SWAP_CHAIN_DESC desc;
                 pSwapChain->GetDesc(&desc);
 
@@ -46,7 +46,7 @@ namespace Menu {
                 ImGui_ImplWin32_Init(desc.OutputWindow);
                 ImGui_ImplDX11_Init(device, context);
 
-                initialized = true;
+                Menu::initialized = true;
 
                 Logger::success("Menu initialized with D3D11 backend");
 
@@ -54,27 +54,11 @@ namespace Menu {
                 wndProc = (WNDPROC)SetWindowLongPtr((HWND)desc.OutputWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
             }
 
-            ImGui::GetIO().MouseDrawCursor = showMenu;
-
-            if (initialized) {
-                if (GetAsyncKeyState(VK_INSERT) & 1) {
-                    showMenu = !showMenu;
-                }
-            }
-
             ImGui_ImplDX11_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
 
-            if (showMenu) {
-                ImGui::Begin("Menu", &showMenu);
-
-                for (auto &func : getRegisteredMenu()) {
-                    ((void (*)())func)();
-                }
-
-                ImGui::End();
-            }
+            Menu::render();
 
             ImGui::Render();
             context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
