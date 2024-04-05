@@ -34,7 +34,7 @@ namespace Feats {
 
         void tick() { return; }
 
-        void renderStack(Logger::Chain::Call &call, bool isRoot = false) {
+        void renderStack(Logger::Chain::Call &call, bool isRoot = false, std::string index = "") {
             const auto childCount = std::get<uint64_t>(call.attributes["childCount"]);
             std::string header = call.funcName + " (" + std::to_string(childCount + 1) + " calls)";
 
@@ -42,9 +42,9 @@ namespace Feats {
 
             if (childCount > 0) {
                 if (isRoot) {
-                    shouldRender = ImGui::CollapsingHeader(header.c_str());
+                    shouldRender = ImGui::CollapsingHeader((index + header).c_str());
                 } else {
-                    shouldRender = ImGui::TreeNode(header.c_str());
+                    shouldRender = ImGui::TreeNode((index + header).c_str());
                 }
             }
 
@@ -75,8 +75,9 @@ namespace Feats {
                 ImGui::Text(call.funcName.c_str());
                 ImGui::PopStyleColor();
 
-                for (auto &child : call.children) {
-                    renderStack(child);
+                for (auto i = 1; auto &child : call.children) {
+                    renderStack(child, false, index + std::to_string(i) + ".");
+                    i++;
                 }
 
                 ImGui::Unindent();
@@ -120,8 +121,9 @@ namespace Feats {
                 return;
             }
 
-            for (auto &log : logs) {
-                renderStack(log, true);
+            for (auto i = 1; auto &log : logs) {
+                renderStack(log, true, std::to_string(i) + ".");
+                i++;
             }
         }
     } // namespace ChainLogging
