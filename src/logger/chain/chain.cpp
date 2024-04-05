@@ -28,19 +28,19 @@ namespace Logger {
 
         void clearLogs() { logs.clear(); }
 
-        void startCallLog(const std::string funcName) {
+        void startCallLog(const std::string funcName, std::map<std::string, std::string> attributes) {
             if (!enabled) {
                 return;
             }
 
             std::lock_guard<std::mutex> lock(mutex);
 
-            Call call = {funcName, STARTED};
+            Call call = {funcName, STARTED, attributes};
 
             callStack.push_back(call);
         }
 
-        void endCallLog(const std::string funcName) {
+        void endCallLog(const std::string funcName, std::map<std::string, std::string> attributes) {
             if (!enabled) {
                 return;
             }
@@ -52,6 +52,12 @@ namespace Logger {
                 if (i->funcName == funcName && i->status == STARTED) {
                     i->status = COMPLETED;
                     break;
+                }
+            }
+
+            if (i != callStack.rend()) {
+                for (const auto &attribute : attributes) {
+                    i->attributes[attribute.first] = attribute.second;
                 }
             }
 
