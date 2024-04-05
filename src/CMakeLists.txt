@@ -3,6 +3,7 @@ add_library(TOFInternal SHARED
     globals.cpp
     hooks.cpp
     logger/logger.cpp
+    logger/chain/chain.cpp
     menu/menu.cpp
     menu/layout/layout.cpp
     menu/dx12_impl.cpp
@@ -15,6 +16,7 @@ add_library(TOFInternal SHARED
     feats/teleport_nucleus.cpp
     feats/quest.cpp
     feats/teleport_anywhere.cpp
+    feats/chain_logging.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)

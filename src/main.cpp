@@ -1,4 +1,5 @@
 #include "feats/anti_anti_cheat.hpp"
+#include "feats/chain_logging.hpp"
 #include "feats/fov.hpp"
 #include "feats/inf_jump.hpp"
 #include "feats/login.hpp"
@@ -40,6 +41,7 @@ int MainThread(HINSTANCE hInstDLL) {
     registerFeature(Feats::Quest);
     registerFeature(Feats::Login);
     registerFeature(Feats::TeleportAnywhere);
+    registerFeature(Feats::ChainLogging);
 
     while (true) {
         if (GetAsyncKeyState(VK_END) & 1) {
