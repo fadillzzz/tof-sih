@@ -6,64 +6,109 @@ namespace Logger {
         bool enabled = false;
         uint16_t minCallStackSize = 3;
 
-        std::vector<std::vector<Call>> logs;
-        std::map<uintptr_t, std::vector<Call>> threadedCallStacks;
+        std::vector<Call> logs;
+        std::map<uintptr_t, Call> threadedCallStacks;
 
         void enable() { enabled = true; }
         void disable() { enabled = false; }
         bool isEnabled() { return enabled; }
 
-        void commit(std::vector<Call> *callStack) {
-            if (callStack->size() >= minCallStackSize) {
+        void commit(Call *callStack) {
+            if (std::get<uint64_t>(callStack->attributes["childCount"]) + 1 >= minCallStackSize) {
                 logs.push_back(*callStack);
             }
-
-            callStack->clear();
         }
 
         void setMinCallStackSize(uint16_t size) { minCallStackSize = size; }
 
         void clearLogs() { logs.clear(); }
 
-        void startCallLog(const std::string funcName, std::map<std::string, std::string> attributes) {
+        void appendChild(Call *parent, Call child) {
+            parent->attributes["childCount"] = std::get<uint64_t>(parent->attributes["childCount"]) + 1;
+
+            for (auto &c : parent->children) {
+                if (c.status == STARTED) {
+                    appendChild(&c, child);
+                    return;
+                }
+            }
+
+            parent->children.push_back(child);
+        }
+
+        void startCallLog(const std::string funcName,
+                          std::map<std::string, std::variant<uint64_t, std::string>> attributes) {
             if (!enabled) {
                 return;
             }
 
-            Call call = {funcName, STARTED, attributes};
+            attributes["childCount"] = (uint64_t)0;
 
-            threadedCallStacks[GetCurrentThreadId()].push_back(call);
+            Call call = {funcName, STARTED, std::vector<Call>{}, attributes};
+
+            const auto callStackIt = threadedCallStacks.find(GetCurrentThreadId());
+
+            if (callStackIt == threadedCallStacks.end()) {
+                threadedCallStacks[GetCurrentThreadId()] = call;
+            } else {
+                const auto callStack = &(*callStackIt).second;
+                if (callStack->status == COMPLETED) {
+                    threadedCallStacks[GetCurrentThreadId()] = call;
+                } else {
+                    appendChild(callStack, call);
+                }
+            }
         }
 
-        void endCallLog(const std::string funcName, std::map<std::string, std::string> attributes) {
+        bool markCompleted(Call *callStack, const std::string &funcName,
+                           std::map<std::string, std::variant<uint64_t, std::string>> *attributes) {
+            for (auto &call : callStack->children) {
+                if (call.status == STARTED) {
+                    const auto result = markCompleted(&call, funcName, attributes);
+                    if (result) {
+                        return result;
+                    }
+                }
+            }
+
+            if (callStack->funcName == funcName && callStack->status == STARTED) {
+                callStack->status = COMPLETED;
+
+                for (const auto &attribute : *attributes) {
+                    callStack->attributes[attribute.first] = attribute.second;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        void endCallLog(const std::string funcName,
+                        std::map<std::string, std::variant<uint64_t, std::string>> attributes) {
             if (!enabled) {
                 return;
             }
 
-            auto callStack = &threadedCallStacks[GetCurrentThreadId()];
+            auto callStackIt = threadedCallStacks.find(GetCurrentThreadId());
 
-            auto i = callStack->rbegin();
-            for (; i != callStack->rend(); ++i) {
-                if (i->funcName == funcName && i->status == STARTED) {
-                    i->status = COMPLETED;
-                    break;
+            if (callStackIt != threadedCallStacks.end()) {
+                auto callStack = &(*callStackIt).second;
+                const auto markResult = markCompleted(callStack, funcName, &attributes);
+
+                if (markResult) {
+                    if (callStack->status == COMPLETED) {
+                        commit(callStack);
+                    }
+                } else {
+                    Logger::error("Could not find " + funcName + " in call stack.");
+                    commit(callStack);
                 }
-            }
-
-            if (i != callStack->rend()) {
-                for (const auto &attribute : attributes) {
-                    i->attributes[attribute.first] = attribute.second;
-                }
-            }
-
-            if (i == callStack->rend()) {
-                Logger::error("Could not find " + funcName + " in call stack.");
-                commit(callStack);
-            } else if (++i == callStack->rend()) {
-                commit(callStack);
+            } else {
+                Logger::error("Could not find call stack for thread " + std::to_string(GetCurrentThreadId()));
             }
         }
 
-        std::vector<std::vector<Call>> getLogs() { return logs; }
+        std::vector<Call> getLogs() { return logs; }
     } // namespace Chain
 } // namespace Logger

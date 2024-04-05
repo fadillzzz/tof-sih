@@ -34,6 +34,59 @@ namespace Feats {
 
         void tick() { return; }
 
+        void renderStack(Logger::Chain::Call &call, bool isRoot = false) {
+            const auto childCount = std::get<uint64_t>(call.attributes["childCount"]);
+            std::string header = call.funcName + " (" + std::to_string(childCount + 1) + " calls)";
+
+            bool shouldRender = true;
+
+            if (childCount > 0) {
+                if (isRoot) {
+                    shouldRender = ImGui::CollapsingHeader(header.c_str());
+                } else {
+                    shouldRender = ImGui::TreeNode(header.c_str());
+                }
+            }
+
+            if (shouldRender) {
+                ImGui::Indent();
+                auto entry = call.funcName;
+
+                if (showObjFullName) {
+                    const auto index = std::get<std::string>(call.attributes["objFullName"]).find_first_of(" ");
+                    const auto type = std::get<std::string>(call.attributes["objFullName"]).substr(0, index);
+
+                    ImGui::PushStyleColor(ImGuiCol_Text, red);
+                    ImGui::Text(type.c_str());
+                    ImGui::PopStyleColor();
+                    ImGui::SameLine();
+
+                    if (index != std::string::npos) {
+                        const auto path = std::get<std::string>(call.attributes["objFullName"]).substr(index);
+
+                        ImGui::PushStyleColor(ImGuiCol_Text, green);
+                        ImGui::Text(path.c_str());
+                        ImGui::PopStyleColor();
+                        ImGui::SameLine();
+                    }
+                }
+
+                ImGui::PushStyleColor(ImGuiCol_Text, blue);
+                ImGui::Text(call.funcName.c_str());
+                ImGui::PopStyleColor();
+
+                for (auto &child : call.children) {
+                    renderStack(child);
+                }
+
+                ImGui::Unindent();
+
+                if (childCount > 0 && !isRoot) {
+                    ImGui::TreePop();
+                }
+            }
+        }
+
         void menu() {
             if (ImGui::Checkbox("Chain Logging", &enabled)) {
                 if (enabled) {
@@ -67,43 +120,8 @@ namespace Feats {
                 return;
             }
 
-            for (uint64_t i = 1; auto &log : logs) {
-                std::string header = "Log " + std::to_string(i);
-                header += " (" + std::to_string(log.size()) + " calls)";
-
-                if (ImGui::CollapsingHeader(header.c_str())) {
-                    for (uint64_t i = 1; auto &call : log) {
-                        ImGui::Indent();
-                        auto entry = call.funcName;
-
-                        if (showObjFullName) {
-                            const auto index = call.attributes["objFullName"].find_first_of(" ");
-                            const auto type = call.attributes["objFullName"].substr(0, index);
-
-                            ImGui::PushStyleColor(ImGuiCol_Text, red);
-                            ImGui::Text(type.c_str());
-                            ImGui::PopStyleColor();
-                            ImGui::SameLine();
-
-                            if (index != std::string::npos) {
-                                const auto path = call.attributes["objFullName"].substr(index);
-
-                                ImGui::PushStyleColor(ImGuiCol_Text, green);
-                                ImGui::Text(path.c_str());
-                                ImGui::PopStyleColor();
-                                ImGui::SameLine();
-                            }
-                        }
-
-                        ImGui::PushStyleColor(ImGuiCol_Text, blue);
-                        ImGui::Text(call.funcName.c_str());
-                        ImGui::PopStyleColor();
-                    }
-
-                    ImGui::Unindent(ImGui::GetStyle().IndentSpacing * log.size());
-                }
-
-                i++;
+            for (auto &log : logs) {
+                renderStack(log, true);
             }
         }
     } // namespace ChainLogging
