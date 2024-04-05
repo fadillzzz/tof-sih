@@ -8,6 +8,10 @@ namespace Feats {
         int callStackSize = 3;
         bool showObjFullName = false;
 
+        constexpr ImVec4 red = ImVec4(0xf3 / 255.0, 0x12 / 255.0, 0x60 / 255.0, 1.0f);
+        constexpr ImVec4 green = ImVec4(0x17 / 255.0, 0xc9 / 255.0, 0x64 / 255.0, 1.0f);
+        constexpr ImVec4 blue = ImVec4(0.0f, 0x6f / 255.0, 0xee / 255.0, 1.0f);
+
         void init() {
             Hooks::registerHook(
                 "*",
@@ -76,7 +80,7 @@ namespace Feats {
                             const auto index = call.attributes["objFullName"].find_first_of(" ");
                             const auto type = call.attributes["objFullName"].substr(0, index);
 
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                            ImGui::PushStyleColor(ImGuiCol_Text, red);
                             ImGui::Text(type.c_str());
                             ImGui::PopStyleColor();
                             ImGui::SameLine();
@@ -84,14 +88,14 @@ namespace Feats {
                             if (index != std::string::npos) {
                                 const auto path = call.attributes["objFullName"].substr(index);
 
-                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+                                ImGui::PushStyleColor(ImGuiCol_Text, green);
                                 ImGui::Text(path.c_str());
                                 ImGui::PopStyleColor();
                                 ImGui::SameLine();
                             }
                         }
 
-                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+                        ImGui::PushStyleColor(ImGuiCol_Text, blue);
                         ImGui::Text(call.funcName.c_str());
                         ImGui::PopStyleColor();
                     }
