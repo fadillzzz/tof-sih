@@ -73,10 +73,27 @@ namespace Feats {
                         auto entry = call.funcName;
 
                         if (showObjFullName) {
-                            entry = call.attributes["objFullName"] + "::" + entry;
+                            const auto index = call.attributes["objFullName"].find_first_of(" ");
+                            const auto type = call.attributes["objFullName"].substr(0, index);
+
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+                            ImGui::Text(type.c_str());
+                            ImGui::PopStyleColor();
+                            ImGui::SameLine();
+
+                            if (index != std::string::npos) {
+                                const auto path = call.attributes["objFullName"].substr(index);
+
+                                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
+                                ImGui::Text(path.c_str());
+                                ImGui::PopStyleColor();
+                                ImGui::SameLine();
+                            }
                         }
 
-                        ImGui::Text(entry.c_str());
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 1.0f, 1.0f));
+                        ImGui::Text(call.funcName.c_str());
+                        ImGui::PopStyleColor();
                     }
 
                     ImGui::Unindent(ImGui::GetStyle().IndentSpacing * log.size());
