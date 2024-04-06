@@ -5,8 +5,6 @@
 namespace Feats {
     namespace NoClip {
         bool enabled = false;
-        float defaultGravityScale = 0.0;
-        float velocity = 5.0;
 
         void init() { return; }
         void tick() {
@@ -60,13 +58,18 @@ namespace Feats {
                 moveVector -= upVector;
             }
 
-            moveVector = moveVector.Normalize();
+            moveVector.Normalize();
+
+            Logger::debug("Move vector: " + std::to_string(moveVector.X) + ", " + std::to_string(moveVector.Y) + ", " +
+                          std::to_string(moveVector.Z));
+
+            const auto velocity = character->CharacterMovement->MaxWalkSpeed / 100.0f;
 
             const auto movement = moveVector * velocity;
 
-            // This has to be set every tick, because certain movements can
-            // cause the value to be reset to the default value.
-            character->CharacterMovement->GravityScale = 0.0;
+            // This is required to prevent the character from continuously sliding
+            // after user input has stopped.
+            character->CharacterMovement->Velocity = SDK::FVector(0.0, 0.0, 0.0);
 
             if (movement.IsZero()) {
                 return;
@@ -87,17 +90,11 @@ namespace Feats {
                 if (enabled) {
                     character->CapsuleComponent->SetCollisionEnabled(SDK::ECollisionEnabled::NoCollision);
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
-                    defaultGravityScale = character->CharacterMovement->GravityScale;
                 } else {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
                     character->CapsuleComponent->SetCollisionEnabled(SDK::ECollisionEnabled::QueryAndPhysics);
-                    character->CharacterMovement->GravityScale = defaultGravityScale;
                 }
             }
-
-            ImGui::SameLine();
-
-            ImGui::SliderFloat("Velocity", &velocity, 0.0, 100.0);
         }
     } // namespace NoClip
 } // namespace Feats
