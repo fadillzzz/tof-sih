@@ -12,7 +12,7 @@ namespace Feats {
                 const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
-                    const auto nuclei = Globals::GetAllObjects<SDK::ABP_Harvest_Gem_Base_C *>(
+                    const auto nuclei = Globals::getAllObjects<SDK::ABP_Harvest_Gem_Base_C *>(
                         SDK::ABP_Harvest_Gem_Base_C::StaticClass());
 
                     if (nuclei.size() > 0) {

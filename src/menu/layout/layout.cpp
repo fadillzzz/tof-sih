@@ -8,6 +8,7 @@
 #include "../../feats/quest.hpp"
 #include "../../feats/teleport_anywhere.hpp"
 #include "../../feats/teleport_nucleus.hpp"
+#include "../../feats/uid_edit.hpp"
 
 namespace Menu {
     namespace Layout {
@@ -19,6 +20,7 @@ namespace Menu {
                 Feats::Fov::menu();
                 Feats::InfJump::menu();
                 Feats::NoClip::menu();
+                Feats::UidEdit::menu();
                 ImGui::EndTabItem();
             }
 
