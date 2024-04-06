@@ -3,19 +3,18 @@
 #include "../hooks.hpp"
 #include "../logger/logger.hpp"
 
+#define USE_UID(typed, uid)                                                                                            \
+    std::wstring wideCustomUid = std::wstring(uid, uid + strlen(uid));                                                 \
+    typed->TextBlock_RoleUID->SetText(SDK::UKismetTextLibrary::Conv_StringToText(SDK::FString(wideCustomUid.c_str())));
+
 #define GOD_HELP_ME(enabled, typed)                                                                                    \
     if (enabled) {                                                                                                     \
         if (strlen(originalUid) == 0) {                                                                                \
             strcpy(originalUid, typed->TextBlock_RoleUID->GetText().ToString().c_str());                               \
         }                                                                                                              \
-                                                                                                                       \
-        std::wstring wideCustomUid = std::wstring(customUid, customUid + strlen(customUid));                           \
-        typed->TextBlock_RoleUID->SetText(                                                                             \
-            SDK::UKismetTextLibrary::Conv_StringToText(SDK::FString(wideCustomUid.c_str())));                          \
+        USE_UID(typed, customUid);                                                                                     \
     } else {                                                                                                           \
-        std::wstring wideCustomUid = std::wstring(originalUid, originalUid + strlen(originalUid));                     \
-        typed->TextBlock_RoleUID->SetText(                                                                             \
-            SDK::UKismetTextLibrary::Conv_StringToText(SDK::FString(wideCustomUid.c_str())));                          \
+        USE_UID(typed, originalUid);                                                                                   \
     }
 
 namespace Feats {
