@@ -18,6 +18,7 @@ add_library(TOFInternal SHARED
     feats/teleport_anywhere.cpp
     feats/chain_logging.cpp
     feats/no_clip.cpp
+    feats/uid_edit.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)

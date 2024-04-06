@@ -8,6 +8,7 @@
 #include "feats/quest.hpp"
 #include "feats/teleport_anywhere.hpp"
 #include "feats/teleport_nucleus.hpp"
+#include "feats/uid_edit.hpp"
 #include "globals.hpp"
 #include "hooks.hpp"
 #include "logger/logger.hpp"
@@ -44,6 +45,7 @@ int MainThread(HINSTANCE hInstDLL) {
     registerFeature(Feats::TeleportAnywhere);
     registerFeature(Feats::ChainLogging);
     registerFeature(Feats::NoClip);
+    registerFeature(Feats::UidEdit);
 
     while (true) {
         if (GetAsyncKeyState(VK_END) & 1) {

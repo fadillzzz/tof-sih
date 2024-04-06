@@ -40,21 +40,17 @@ namespace Hooks {
         const std::string functionName = pFunction->GetFullName().substr(9);
 
         const auto preResult = runHooks(Type::PRE, functionName, pObject, pFunction, pParams);
-
         RETURN_IF_STOPPING(preResult, "Pre-hooks: Execution for " + functionName + " was stopped");
 
         const auto preWildResult = runHooks(Type::PRE, "*", pObject, pFunction, pParams);
-
         RETURN_IF_STOPPING(preWildResult, "Pre-hooks (Wildcard): Execution for " + functionName + " was stopped");
 
         oProcessEvent(pObject, pFunction, pParams, pResult);
 
         const auto postResult = runHooks(Type::POST, functionName, pObject, pFunction, pParams);
-
         RETURN_IF_STOPPING(postResult, "Post-hooks: Execution for " + functionName + " was stopped");
 
         const auto postWildResult = runHooks(Type::POST, "*", pObject, pFunction, pParams);
-
         RETURN_IF_STOPPING(postWildResult, "Post-hooks (Wildcard): Execution for " + functionName + " was stopped");
     }
 
