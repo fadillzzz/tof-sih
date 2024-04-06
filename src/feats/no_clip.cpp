@@ -85,11 +85,21 @@ namespace Feats {
                 }
 
                 if (enabled) {
-                    character->CapsuleComponent->SetCollisionEnabled(SDK::ECollisionEnabled::NoCollision);
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
+                    const auto world = Globals::getWorld();
+
+                    // Hackish solution to avoid crashing when enabling no clip in Vera Plane
+                    if (world->GetName() == "Vera_P") {
+                        SDK::UKismetSystemLibrary::CollectGarbage();
+                        // Waiting for garbage collection to finish. There's no good way to do this, so we chose an
+                        // arbitrary amount of time and hope for the best.
+                        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+                    }
+
+                    character->SetActorEnableCollision(false);
                 } else {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
-                    character->CapsuleComponent->SetCollisionEnabled(SDK::ECollisionEnabled::QueryAndPhysics);
+                    character->SetActorEnableCollision(true);
                 }
             }
         }
