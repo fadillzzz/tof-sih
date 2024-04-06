@@ -8,7 +8,7 @@ namespace Feats {
 
         void init() {
             Hooks::registerHook("UI_OverviewMapContainer_WarFog_BP.UI_OverviewMapContainer_WarFog_BP_C.BP_OnMapClicked",
-                                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
+                                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
                                     // If the T key is held down
                                     if (GetAsyncKeyState(0x54) < 0) {
                                         const auto typedParams = ((

@@ -15,7 +15,7 @@ namespace Feats {
         void init() {
             Hooks::registerHook(
                 "*",
-                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
                     const auto functionName = pFunction->GetFullName().substr(9);
                     Logger::Chain::startCallLog(functionName, {{"objFullName", pObject->GetFullName()}});
                     return Hooks::ExecutionFlag::CONTINUE_EXECUTION;
@@ -24,7 +24,7 @@ namespace Feats {
 
             Hooks::registerHook(
                 "*",
-                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
                     const auto functionName = pFunction->GetFullName().substr(9);
                     Logger::Chain::endCallLog(functionName);
                     return Hooks::ExecutionFlag::CONTINUE_EXECUTION;
@@ -54,8 +54,6 @@ namespace Feats {
                 if (!isTreeNode) {
                     ImGui::Indent();
                 }
-
-                auto entry = call.funcName;
 
                 if (showObjFullName) {
                     const auto index = std::get<std::string>(call.attributes["objFullName"]).find_first_of(" ");
@@ -97,6 +95,7 @@ namespace Feats {
 
         void menu() {
             ImGui::BeginChild("Call stack logging", ImVec2(0, 0), 0, ImGuiWindowFlags_HorizontalScrollbar);
+
             if (ImGui::Checkbox("Chain Logging", &enabled)) {
                 if (enabled) {
                     Logger::Chain::enable();
@@ -133,6 +132,7 @@ namespace Feats {
                 renderStack(log, true, std::to_string(i) + ".");
                 i++;
             }
+
             ImGui::EndChild();
         }
     } // namespace ChainLogging

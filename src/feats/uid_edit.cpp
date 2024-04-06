@@ -34,7 +34,7 @@ namespace Feats {
         void init() {
             Hooks::registerHook(
                 "UI_BasicSettings.UI_BasicSettings_C.Construct",
-                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
                     applyChanges((SDK::UQRSLUIBase *)pObject, true);
 
                     return Hooks::CONTINUE_EXECUTION;
@@ -45,13 +45,8 @@ namespace Feats {
             Hooks::registerHook(
                 "UI_BasicSettings.UI_BasicSettings_C.BndEvt__HottaButton_CopyRoleUID_K2Node_ComponentBoundEvent_0_"
                 "OnButtonClickedEvent__DelegateSignature",
-                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
-                    auto originalUidHandle = GlobalAlloc(GMEM_MOVEABLE, strlen(originalUid) + 1);
-                    memcpy(GlobalLock(originalUidHandle), originalUid, strlen(originalUid) + 1);
-                    OpenClipboard(nullptr);
-                    EmptyClipboard();
-                    SetClipboardData(CF_TEXT, originalUidHandle);
-                    CloseClipboard();
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
+                    ImGui::SetClipboardText(originalUid);
 
                     return Hooks::CONTINUE_EXECUTION;
                 },

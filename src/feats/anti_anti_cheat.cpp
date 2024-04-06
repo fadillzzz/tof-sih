@@ -12,11 +12,12 @@ namespace Feats {
                                        "HottaFramework.HottaPlayerCharacter.ServerRecordHarvestedItem"};
 
             for (const auto &funcName : funcNames) {
-                Hooks::registerHook(funcName,
-                                    [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> uint8_t {
-                                        Logger::success("Blocking anticheat function: " + pFunction->GetFullName());
-                                        return Hooks::STOP_EXECUTION;
-                                    });
+                Hooks::registerHook(
+                    funcName,
+                    [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
+                        Logger::success("Blocking anticheat function: " + pFunction->GetFullName());
+                        return Hooks::STOP_EXECUTION;
+                    });
             }
         }
 

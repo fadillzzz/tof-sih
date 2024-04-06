@@ -9,7 +9,7 @@ namespace Hooks {
         POST,
     };
 
-    typedef uint8_t (*Callback)(SDK::UObject *, SDK::UFunction *, void *);
+    typedef ExecutionFlag (*Callback)(SDK::UObject *, SDK::UFunction *, void *);
 
     void init();
     void shutdown();
