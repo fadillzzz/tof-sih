@@ -66,7 +66,8 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "mutex": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "regex": "cpp"
     },
     "cmake.preferredGenerators": [
         "Visual Studio 17 2022"

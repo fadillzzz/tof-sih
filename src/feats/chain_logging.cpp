@@ -1,6 +1,7 @@
 #include "chain_logging.hpp"
 #include "../hooks.hpp"
 #include "../logger/chain/chain.hpp"
+#include "../logger/logger.hpp"
 
 namespace Feats {
     namespace ChainLogging {
@@ -34,6 +35,30 @@ namespace Feats {
 
         void tick() { return; }
 
+        std::string getCopyableText(const Logger::Chain::Call *call, const uint16_t indentation = 0) {
+            std::string text = std::string(4 * indentation, ' ');
+
+            if (showObjFullName) {
+                const auto index = std::get<std::string>(call->attributes.at("objFullName")).find_first_of(" ");
+                const auto type = std::get<std::string>(call->attributes.at("objFullName")).substr(0, index);
+
+                text += type + " ";
+
+                if (index != std::string::npos) {
+                    const auto path = std::get<std::string>(call->attributes.at("objFullName")).substr(index + 1);
+                    text += path + " ";
+                }
+            }
+
+            text += call->funcName + "\n";
+
+            for (auto &child : call->children) {
+                text += getCopyableText(&child, indentation + 1);
+            }
+
+            return text;
+        }
+
         void renderStack(Logger::Chain::Call &call, bool isRoot = false, std::string index = "") {
             const auto childCount = std::get<uint64_t>(call.attributes["childCount"]);
             std::string header = call.funcName + " (" + std::to_string(childCount + 1) + " calls)";
@@ -42,7 +67,17 @@ namespace Feats {
 
             if (childCount > 0) {
                 if (isRoot) {
-                    shouldRender = ImGui::CollapsingHeader((index + header).c_str());
+                    shouldRender =
+                        ImGui::CollapsingHeader((index + header).c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
+                    ImGui::SameLine();
+
+                    ImGui::PushID((index + header).c_str());
+
+                    if (ImGui::Button("Copy")) {
+                        ImGui::SetClipboardText(getCopyableText(&call).c_str());
+                    }
+
+                    ImGui::PopID();
                 } else {
                     shouldRender = ImGui::TreeNode((index + header).c_str());
                 }
@@ -65,7 +100,7 @@ namespace Feats {
                     ImGui::SameLine();
 
                     if (index != std::string::npos) {
-                        const auto path = std::get<std::string>(call.attributes["objFullName"]).substr(index);
+                        const auto path = std::get<std::string>(call.attributes["objFullName"]).substr(index + 1);
 
                         ImGui::PushStyleColor(ImGuiCol_Text, green);
                         ImGui::Text(path.c_str());
