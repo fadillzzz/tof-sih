@@ -60,9 +60,6 @@ namespace Feats {
 
             moveVector.Normalize();
 
-            Logger::debug("Move vector: " + std::to_string(moveVector.X) + ", " + std::to_string(moveVector.Y) + ", " +
-                          std::to_string(moveVector.Z));
-
             const auto velocity = character->CharacterMovement->MaxWalkSpeed / 100.0f;
 
             const auto movement = moveVector * velocity;
