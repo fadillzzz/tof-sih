@@ -31,7 +31,9 @@ namespace Feats {
         void tick() { return; }
 
         void menu() {
+            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.2f);
             ImGui::InputFloat("Teleport Anywhere Z axis (height)", &zAxis);
+            ImGui::PopItemWidth();
             ImGui::Text("Press T while clicking on the map to teleport to that location.");
         }
     } // namespace TeleportAnywhere

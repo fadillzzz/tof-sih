@@ -33,14 +33,17 @@ namespace Feats {
                 }
             }
 
-            if (ImGui::Checkbox("Enabled", &enabled)) {
+            if (ImGui::Checkbox("Enable Movement Speed", &enabled)) {
                 if (!enabled) {
                     applySpeed(defaultSpeed);
                 }
             }
 
-            ImGui::SameLine();
+            ImGui::Indent();
+            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
             ImGui::SliderFloat("Movement speed", &speed, 1.0f, 10000.0f);
+            ImGui::PopItemWidth();
+            ImGui::Unindent();
         }
     } // namespace MoveSpeed
 } // namespace Feats

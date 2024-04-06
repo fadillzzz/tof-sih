@@ -20,8 +20,8 @@
 namespace Feats {
     namespace UidEdit {
         bool enabled = false;
-        char customUid[64] = "TOF-SIH";
-        char originalUid[64] = "";
+        char customUid[24] = "TOF-SIH";
+        char originalUid[24] = "";
 
         void applyChanges(SDK::UQRSLUIBase *obj, bool isSettings) {
             if (isSettings) {
@@ -61,10 +61,6 @@ namespace Feats {
         void tick() { return; }
 
         void menu() {
-            ImGui::InputText("Custom UID", customUid, sizeof(customUid));
-
-            ImGui::SameLine();
-
             if (ImGui::Checkbox("Enable custom UID", &enabled)) {
                 const auto topRole = Globals::getObject<SDK::UUI_TopRoleID_C *>(SDK::UUI_TopRoleID_C::StaticClass());
 
@@ -72,6 +68,12 @@ namespace Feats {
                     applyChanges(topRole, false);
                 }
             }
+
+            ImGui::Indent();
+            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
+            ImGui::InputText("Custom UID", customUid, sizeof(customUid));
+            ImGui::PopItemWidth();
+            ImGui::Unindent();
         }
     } // namespace UidEdit
 } // namespace Feats

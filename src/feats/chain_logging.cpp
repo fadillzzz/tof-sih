@@ -96,6 +96,7 @@ namespace Feats {
         }
 
         void menu() {
+            ImGui::BeginChild("Call stack logging", ImVec2(0, 0), 0, ImGuiWindowFlags_HorizontalScrollbar);
             if (ImGui::Checkbox("Chain Logging", &enabled)) {
                 if (enabled) {
                     Logger::Chain::enable();
@@ -132,6 +133,7 @@ namespace Feats {
                 renderStack(log, true, std::to_string(i) + ".");
                 i++;
             }
+            ImGui::EndChild();
         }
     } // namespace ChainLogging
 } // namespace Feats
