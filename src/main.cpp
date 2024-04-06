@@ -4,6 +4,7 @@
 #include "feats/inf_jump.hpp"
 #include "feats/login.hpp"
 #include "feats/move_speed.hpp"
+#include "feats/no_clip.hpp"
 #include "feats/quest.hpp"
 #include "feats/teleport_anywhere.hpp"
 #include "feats/teleport_nucleus.hpp"
@@ -42,6 +43,7 @@ int MainThread(HINSTANCE hInstDLL) {
     registerFeature(Feats::Login);
     registerFeature(Feats::TeleportAnywhere);
     registerFeature(Feats::ChainLogging);
+    registerFeature(Feats::NoClip);
 
     while (true) {
         if (GetAsyncKeyState(VK_END) & 1) {
