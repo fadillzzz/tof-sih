@@ -48,8 +48,13 @@ namespace Feats {
                 }
             }
 
+            const auto isTreeNode = childCount > 0 && !isRoot;
+
             if (shouldRender) {
-                ImGui::Indent();
+                if (!isTreeNode) {
+                    ImGui::Indent();
+                }
+
                 auto entry = call.funcName;
 
                 if (showObjFullName) {
@@ -80,9 +85,11 @@ namespace Feats {
                     i++;
                 }
 
-                ImGui::Unindent();
+                if (!isTreeNode) {
+                    ImGui::Unindent();
+                }
 
-                if (childCount > 0 && !isRoot) {
+                if (isTreeNode) {
                     ImGui::TreePop();
                 }
             }
