@@ -29,11 +29,10 @@ namespace Menu {
     }
 
     void render() {
-        ImGui::GetIO().MouseDrawCursor = showMenu;
-
         if (initialized) {
             if (GetAsyncKeyState(VK_INSERT) & 1) {
                 showMenu = !showMenu;
+                ImGui::GetIO().MouseDrawCursor = showMenu;
             }
         }
 

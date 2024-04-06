@@ -62,6 +62,7 @@ namespace Menu {
                     ImGuiIO &io = ImGui::GetIO();
                     (void)io;
                     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+                    io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
                     swapChainWaitableObject = pSwapChain->GetFrameLatencyWaitableObject();
                     fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 

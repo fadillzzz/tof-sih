@@ -43,6 +43,7 @@ namespace Menu {
                 ImGuiIO &io = ImGui::GetIO();
                 (void)io;
                 io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+                io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
                 ImGui_ImplWin32_Init(desc.OutputWindow);
                 ImGui_ImplDX11_Init(device, context);
 
