@@ -31,8 +31,9 @@ namespace Feats {
                             SDK::ABP_Harvest_Gem_Base_C *closestActor = (SDK::ABP_Harvest_Gem_Base_C *)*closestNucleus;
                             auto newPos = closestActor->K2_GetActorLocation();
                             newPos.Z += 500;
-                            auto newRot = character->K2_GetActorRotation();
-                            character->SafeTeleportTo(newPos, newRot);
+                            const auto location =
+                                (SDK::FVector *)((byte *)character->CharacterMovement->UpdatedComponent + 0x1E0);
+                            *location = newPos;
                         }
                     }
                 }
