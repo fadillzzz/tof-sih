@@ -1,12 +1,30 @@
 #include "no_clip.hpp"
 #include "../globals.hpp"
+#include "../hooks.hpp"
 #include "../logger/logger.hpp"
 
 namespace Feats {
     namespace NoClip {
         bool enabled = false;
+        bool toggleInNextTick = false;
 
-        void init() { return; }
+        void init() {
+            Hooks::registerHook(
+                "Engine.ActorComponent.ReceiveTick",
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
+                    if (toggleInNextTick) {
+                        const auto character = Globals::getCharacter();
+
+                        if (character != nullptr) {
+                            character->SetActorEnableCollision(!enabled);
+                            toggleInNextTick = false;
+                        }
+                    }
+
+                    return Hooks::ExecutionFlag::CONTINUE_EXECUTION;
+                });
+        }
+
         void tick() {
             if (!enabled) {
                 return;
@@ -86,21 +104,11 @@ namespace Feats {
 
                 if (enabled) {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
-                    const auto world = Globals::getWorld();
-
-                    // Hackish solution to avoid crashing when enabling no clip in Vera Plane
-                    if (world->GetName() == "Vera_P") {
-                        SDK::UKismetSystemLibrary::CollectGarbage();
-                        // Waiting for garbage collection to finish. There's no good way to do this, so we chose an
-                        // arbitrary amount of time and hope for the best.
-                        std::this_thread::sleep_for(std::chrono::milliseconds(150));
-                    }
-
-                    character->SetActorEnableCollision(false);
                 } else {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
-                    character->SetActorEnableCollision(true);
                 }
+
+                toggleInNextTick = true;
             }
         }
     } // namespace NoClip
