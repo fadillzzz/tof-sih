@@ -51,6 +51,16 @@ namespace Feats {
                     return Hooks::CONTINUE_EXECUTION;
                 },
                 Hooks::Type::POST);
+
+            // Hook for handling world change resetting the UID
+            Hooks::registerHook(
+                "UI_TopRoleID.UI_TopRoleID_C.Construct",
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
+                    applyChanges((SDK::UQRSLUIBase *)pObject, false);
+
+                    return Hooks::CONTINUE_EXECUTION;
+                },
+                Hooks::Type::POST);
         }
 
         void tick() { return; }
