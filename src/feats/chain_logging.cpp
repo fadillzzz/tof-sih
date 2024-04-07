@@ -159,10 +159,6 @@ namespace Feats {
 
             auto logs = Logger::Chain::getLogs();
 
-            if (logs.empty()) {
-                return;
-            }
-
             for (auto i = 1; auto &log : logs) {
                 renderStack(log, true, std::to_string(i) + ".");
                 i++;
