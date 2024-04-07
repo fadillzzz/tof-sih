@@ -60,7 +60,6 @@ namespace Menu {
                 if (SUCCEEDED(pSwapChain->GetDevice(__uuidof(ID3D12Device), (void **)&device))) {
                     ImGui::CreateContext();
                     ImGuiIO &io = ImGui::GetIO();
-                    (void)io;
                     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
                     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
                     swapChainWaitableObject = pSwapChain->GetFrameLatencyWaitableObject();
@@ -114,6 +113,8 @@ namespace Menu {
                     Menu::initialized = true;
 
                     Logger::success("Menu initialized with D3D12 backend");
+
+                    Menu::postInit();
 
                     window = windowHandle;
                     wndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWLP_WNDPROC, (LONG_PTR)WndProc);

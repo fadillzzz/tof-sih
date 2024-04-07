@@ -5,4 +5,5 @@ namespace Menu {
     void init();
     void shutdown();
     void render();
+    void postInit();
 } // namespace Menu

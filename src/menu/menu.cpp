@@ -6,6 +6,7 @@
 #include "../logger/logger.hpp"
 #include "layout/layout.hpp"
 #include "menu.hpp"
+#include "roboto.hpp"
 
 namespace Menu {
     bool isUsingDx12 = false;
@@ -18,6 +19,15 @@ namespace Menu {
         } else {
             DX11::init();
         }
+    }
+
+    void postInit() {
+        auto io = ImGui::GetIO();
+        ImFontConfig fontConfig;
+        fontConfig.FontDataOwnedByAtlas = false;
+        auto roboto = io.Fonts->AddFontFromMemoryTTF((void *)RobotoRegular, RobotoRegularLen, 48.0f, &fontConfig);
+        roboto->Scale /= 3;
+        io.FontDefault = roboto;
     }
 
     void shutdown() {

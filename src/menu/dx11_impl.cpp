@@ -41,7 +41,6 @@ namespace Menu {
 
                 ImGui::CreateContext();
                 ImGuiIO &io = ImGui::GetIO();
-                (void)io;
                 io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
                 io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
                 ImGui_ImplWin32_Init(desc.OutputWindow);
@@ -50,6 +49,8 @@ namespace Menu {
                 Menu::initialized = true;
 
                 Logger::success("Menu initialized with D3D11 backend");
+
+                Menu::postInit();
 
                 window = desc.OutputWindow;
                 wndProc = (WNDPROC)SetWindowLongPtr((HWND)desc.OutputWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
