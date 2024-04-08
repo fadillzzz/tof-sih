@@ -1,7 +1,6 @@
 add_executable(Injector main.cpp)
-
 target_precompile_headers(Injector PRIVATE pch.hpp)
-add_subdirectory(Blackbone/src/BlackBone)
+add_subdirectory(Blackbone/src)
 target_link_libraries(BlackBone PRIVATE ${CMAKE_SOURCE_DIR}/injector/Blackbone/src/3rd_party/DIA/lib/amd64/diaguids.lib)
 target_include_directories(Injector PRIVATE Blackbone/src/3rd_party)
 target_include_directories(Injector PRIVATE Blackbone/src/BlackBone)
