@@ -4,3 +4,6 @@
 [submodule "kiero"]
 	path = kiero
 	url = git@github.com:fadillzzz/kiero.git
+[submodule "injector/Blackbone"]
+	path = injector/Blackbone
+	url = git@github.com:DarthTon/Blackbone.git
