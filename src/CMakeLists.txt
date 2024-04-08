@@ -20,7 +20,6 @@ add_library(TOFInternal SHARED
     feats/no_clip.cpp
     feats/uid_edit.cpp
     feats/about.cpp
-    config/config.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)

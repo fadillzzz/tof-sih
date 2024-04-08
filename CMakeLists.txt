@@ -18,4 +18,5 @@ FetchContent_MakeAvailable(json)
 
 add_subdirectory(src)
 add_subdirectory(CppSDK)
+add_subdirectory(cfg)
 add_subdirectory(injector)

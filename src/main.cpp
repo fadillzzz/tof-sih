@@ -1,4 +1,3 @@
-#include "config/config.hpp"
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
 #include "feats/fov.hpp"
@@ -23,7 +22,6 @@ std::vector<void *> registeredFeatures;
 
 int MainThread(HINSTANCE hInstDLL) {
     Logger::init();
-    Config::init(hInstDLL);
 
     Logger::info("Initializing...");
 
