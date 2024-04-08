@@ -6,6 +6,7 @@
 #include <shellapi.h>
 
 typedef void (*setDirectory)(std::wstring directory);
+typedef int (*init)(HINSTANCE hInstDLL);
 
 PWSTR askForLauncherPath() {
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -114,6 +115,8 @@ int main() {
         }
     }
 
+    Config::shutdown();
+
     if (!startLauncher(launcherPath)) {
         return 1;
     }
@@ -123,52 +126,27 @@ int main() {
     blackbone::Process qrslProcess;
 
     while (true) {
-        if (NT_SUCCESS(qrslProcess.Attach(L"QRSL.exe"))) {
+        const auto attachResult = qrslProcess.Attach(L"QRSL.exe");
+
+        if (NT_SUCCESS(attachResult)) {
             break;
         }
 
-        std::cout << "Waiting for QRSL.exe..." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-    }
-
-    std::cout << "Wait until you're at the login screen, then press F1 to inject the DLL." << std::endl;
-
-    while (true) {
-        if (GetAsyncKeyState(VK_F1) & 1) {
-            break;
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     std::wcout << L"Injecting " + directory + L"TOFInternal.dll" << std::endl;
 
-    auto callback = [](blackbone::CallbackType type, void *ctx, blackbone::Process &proc,
-                       const blackbone::ModuleData &modInfo) {
-        const auto func = proc.modules().GetExport(L"TOFInternal.dll", "setDirectory");
-
-        if (func.success()) {
-            const auto procAddress = (setDirectory)func.result().procAddress;
-            setDirectory(directory);
-        } else {
-            std::cout << "Failed to get setDirectory function. Status: " << func.status << std::endl;
-        }
-
-        return blackbone::LoadData::LoadData(blackbone::MappingType::MT_Default, blackbone::LdrRefFlags::Ldr_None);
-    };
-
-    const auto result = qrslProcess.mmap().MapImage(
-        directory + L"TOFInternal.dll",
-        blackbone::eLoadFlags::NoThreads | blackbone::eLoadFlags::ManualImports | blackbone::eLoadFlags::RebaseProcess,
-        callback);
+    const auto result = qrslProcess.modules().Inject(directory + L"TOFInternal.dll");
 
     if (result.success()) {
-        std::cout << "Injected successfully!" << std::endl;
+        std::cout << "Injected successfully." << std::endl;
+        const auto allModules = qrslProcess.modules().GetAllModules();
     } else {
         std::cout << "Failed to inject. Status: " << result.status << std::endl;
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(4));
-
-    Config::shutdown();
+    std::this_thread::sleep_for(std::chrono::seconds(40));
 
     return 0;
 }
