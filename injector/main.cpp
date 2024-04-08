@@ -141,12 +141,11 @@ int main() {
 
     if (result.success()) {
         std::cout << "Injected successfully." << std::endl;
-        const auto allModules = qrslProcess.modules().GetAllModules();
     } else {
         std::cout << "Failed to inject. Status: " << result.status << std::endl;
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(40));
+    std::this_thread::sleep_for(std::chrono::seconds(4));
 
     return 0;
 }
