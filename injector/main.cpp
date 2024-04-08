@@ -79,7 +79,7 @@ int main() {
             Config::save();
             launcherPath = Config::get<nlohmann::json::string_t>("/launcherPath", "");
         } else {
-            std::wcout << L"Launcher path not found. Exiting..." << std::endl;
+            std::wcout << L"Launcher path not given. Exiting..." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(3));
             return 1;
         }
@@ -87,7 +87,9 @@ int main() {
 
     STARTUPINFO si;
     si.cb = sizeof(si);
+    ZeroMemory(&si, sizeof(si));
     PROCESS_INFORMATION pi;
+    ZeroMemory(&pi, sizeof(pi));
 
     SetEnvironmentVariable(L"__COMPAT_LAYER", L"RUNASINVOKER");
 
@@ -118,10 +120,10 @@ int main() {
         std::this_thread::sleep_for(std::chrono::seconds(3));
     }
 
-    std::cout << "Wait until you're at the login screen, then press enter to inject the DLL." << std::endl;
+    std::cout << "Wait until you're at the login screen, then press F1 to inject the DLL." << std::endl;
 
     while (true) {
-        if (GetAsyncKeyState(VK_RETURN) & 1) {
+        if (GetAsyncKeyState(VK_F1) & 1) {
             break;
         }
     }
