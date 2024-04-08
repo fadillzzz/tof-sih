@@ -66,7 +66,7 @@ int main() {
     Config::setDirectory(directory);
     Config::init();
 
-    const auto launcherPath = Config::get<nlohmann::json::string_t>("/launcherPath", "");
+    auto launcherPath = Config::get<nlohmann::json::string_t>("/launcherPath", "");
 
     if (launcherPath->empty()) {
         std::wcout << L"Launcher path not found. Please select the launcher path." << std::endl;
@@ -77,6 +77,7 @@ int main() {
             const auto multiBytePath = _bstr_t(path.c_str());
             Config::config["launcherPath"] = multiBytePath;
             Config::save();
+            launcherPath = Config::get<nlohmann::json::string_t>("/launcherPath", "");
         } else {
             std::wcout << L"Launcher path not found. Exiting..." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -103,13 +104,6 @@ int main() {
 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
-
-    if (!launcherProcessResult) {
-        std::cout << "Failed to start the launcher. Exiting..." << std::endl;
-        std::cout << "Error: " << GetLastError() << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        return 1;
-    }
 
     std::cout << "Launcher has been started. Please start the game from the launcher." << std::endl;
 
