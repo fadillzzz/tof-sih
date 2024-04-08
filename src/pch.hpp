@@ -9,7 +9,6 @@
 #include <d3d11.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -18,4 +17,3 @@
 
 #include "../CppSDK/SDK.hpp"
 #include "imgui.h"
-#include <nlohmann/json.hpp>
