@@ -9,5 +9,9 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 endif()
 add_definitions(-DUNICODE -D_UNICODE)
 
+include(FetchContent)
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
 add_subdirectory(src)
 add_subdirectory(CppSDK)
