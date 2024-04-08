@@ -1,8 +1,12 @@
 #define WIN32_LEAN_AND_MEAN
 
+#include "ManualMap/MMap.h"
 #include "Process/Process.h"
 #include "config.hpp"
 #include <shellapi.h>
+
+typedef void (*setDirectory)(std::wstring directory);
+typedef int (*init)(HINSTANCE hInstDLL);
 
 PWSTR askForLauncherPath() {
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -46,6 +50,32 @@ PWSTR askForLauncherPath() {
     return pszFilePath;
 }
 
+bool startLauncher(std::string *launcherPath) {
+    STARTUPINFO si;
+    si.cb = sizeof(si);
+    ZeroMemory(&si, sizeof(si));
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&pi, sizeof(pi));
+
+    SetEnvironmentVariable(L"__COMPAT_LAYER", L"RUNASINVOKER");
+
+    wchar_t *wideLauncherPath = (wchar_t *)std::wstring(launcherPath->begin(), launcherPath->end()).c_str();
+    const auto launcherProcessResult =
+        CreateProcess(wideLauncherPath, wideLauncherPath, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
+
+    if (!launcherProcessResult) {
+        std::cout << "Failed to start the launcher. Exiting..." << std::endl;
+        std::cout << "Error: " << GetLastError() << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        return false;
+    }
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return true;
+}
+
 int main() {
     blackbone::Process launcherChecker;
 
@@ -85,63 +115,37 @@ int main() {
         }
     }
 
-    STARTUPINFO si;
-    si.cb = sizeof(si);
-    ZeroMemory(&si, sizeof(si));
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&pi, sizeof(pi));
+    Config::shutdown();
 
-    SetEnvironmentVariable(L"__COMPAT_LAYER", L"RUNASINVOKER");
-
-    wchar_t *wideLauncherPath = (wchar_t *)std::wstring(launcherPath->begin(), launcherPath->end()).c_str();
-    const auto launcherProcessResult =
-        CreateProcess(wideLauncherPath, wideLauncherPath, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
-
-    if (!launcherProcessResult) {
-        std::cout << "Failed to start the launcher. Exiting..." << std::endl;
-        std::cout << "Error: " << GetLastError() << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+    if (!startLauncher(launcherPath)) {
         return 1;
     }
-
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
 
     std::cout << "Launcher has been started. Please start the game from the launcher." << std::endl;
 
     blackbone::Process qrslProcess;
 
     while (true) {
-        if (NT_SUCCESS(qrslProcess.Attach(L"QRSL.exe"))) {
+        const auto attachResult = qrslProcess.Attach(L"QRSL.exe");
+
+        if (NT_SUCCESS(attachResult)) {
             break;
         }
 
-        std::cout << "Waiting for QRSL.exe..." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-    }
-
-    std::cout << "Wait until you're at the login screen, then press F1 to inject the DLL." << std::endl;
-
-    while (true) {
-        if (GetAsyncKeyState(VK_F1) & 1) {
-            break;
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     std::wcout << L"Injecting " + directory + L"TOFInternal.dll" << std::endl;
 
-    const auto result = qrslProcess.mmap().MapImage(
-        directory + L"TOFInternal.dll", blackbone::eLoadFlags::NoThreads | blackbone::eLoadFlags::WipeHeader);
+    const auto result = qrslProcess.modules().Inject(directory + L"TOFInternal.dll");
 
-    if (NT_SUCCESS(result.status)) {
-        std::cout << "Injected successfully!" << std::endl;
+    if (result.success()) {
+        std::cout << "Injected successfully." << std::endl;
     } else {
         std::cout << "Failed to inject. Status: " << result.status << std::endl;
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(4));
-
-    Config::shutdown();
 
     return 0;
 }

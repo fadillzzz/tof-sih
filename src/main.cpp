@@ -1,3 +1,5 @@
+#include "main.hpp"
+#include "config.hpp"
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
 #include "feats/fov.hpp"
@@ -19,6 +21,8 @@ std::vector<void *> registeredFeatures;
 #define registerFeature(name)                                                                                          \
     name::init();                                                                                                      \
     registeredFeatures.push_back((void *)name::tick);
+
+void setDirectory(std::wstring directory) { Config::setDirectory(directory); }
 
 int MainThread(HINSTANCE hInstDLL) {
     Logger::init();
