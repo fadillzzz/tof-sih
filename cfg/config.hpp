@@ -5,7 +5,7 @@
 namespace Config {
     extern nlohmann::json config;
 
-    extern "C" __declspec(dllexport) void setDirectory(std::wstring directory);
+    void setDirectory(std::wstring directory);
     void init();
     void shutdown();
     void save();
