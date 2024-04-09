@@ -19,8 +19,8 @@
 
 namespace Feats {
     namespace UidEdit {
-        auto enabled = Config::get<bool>("/feats/uidEdit/enabled", false);
-        auto customUid = Config::get<std::string>("/feats/uidEdit/customUid", "TOF-SIH");
+        Config::field<bool> enabled;
+        Config::field<std::string> customUid;
         std::string originalUid = "";
 
         void applyChanges(SDK::UQRSLUIBase *obj, bool isSettings) {
@@ -32,6 +32,9 @@ namespace Feats {
         }
 
         void init() {
+            enabled = Config::get<bool>("/feats/uidEdit/enabled", false);
+            customUid = Config::get<std::string>("/feats/uidEdit/customUid", "TOF-SIH");
+
             Hooks::registerHook(
                 "UI_BasicSettings.UI_BasicSettings_C.Construct",
                 [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {

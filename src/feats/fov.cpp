@@ -2,11 +2,11 @@
 
 namespace Feats {
     namespace Fov {
-        auto fov = Config::get<double>("/feats/fov/fov", 75.0f);
+        Config::field<double> fov;
         double min = 1.0l;
         double max = 180.0l;
 
-        void init() { return; }
+        void init() { fov = Config::get<double>("/feats/fov/fov", 75.0f); }
 
         void tick() {
             const auto world = Globals::getWorld();

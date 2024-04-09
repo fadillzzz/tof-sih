@@ -6,8 +6,8 @@ namespace Feats {
         float defaultSpeed = 0.0f;
         double minSpeed = 1.0f;
         double maxSpeed = 10000.0f;
-        auto speed = Config::get<double>("/feats/moveSpeed/speed", 0.0f);
-        auto enabled = Config::get<bool>("/feats/moveSpeed/enabled", false);
+        Config::field<double> speed;
+        Config::field<bool> enabled;
 
         void applySpeed(float newSpeed) {
             const auto character = Globals::getCharacter();
@@ -23,7 +23,10 @@ namespace Feats {
             }
         }
 
-        void init() { return; }
+        void init() {
+            speed = Config::get<double>("/feats/moveSpeed/speed", 0.0f);
+            enabled = Config::get<bool>("/feats/moveSpeed/enabled", false);
+        }
 
         void menu() {
             if (*speed <= 0.0f) {

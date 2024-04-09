@@ -2,9 +2,9 @@
 
 namespace Feats {
     namespace InfJump {
-        auto enabled = Config::get<bool>("/feats/infJump/enabled", false);
+        Config::field<bool> enabled;
 
-        void init() {}
+        void init() { enabled = Config::get<bool>("/feats/infJump/enabled", false); }
 
         void tick() {
             const auto character = Globals::getCharacter();

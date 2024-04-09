@@ -5,10 +5,12 @@
 
 namespace Feats {
     namespace NoClip {
-        auto enabled = Config::get<bool>("/feats/noClip/enabled", false);
+        Config::field<bool> enabled;
         bool toggleInNextTick = false;
 
         void init() {
+            enabled = Config::get<bool>("/feats/noClip/enabled", false);
+
             Hooks::registerHook(
                 "Engine.ActorComponent.ReceiveTick",
                 [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {

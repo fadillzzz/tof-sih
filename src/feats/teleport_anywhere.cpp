@@ -4,9 +4,11 @@
 
 namespace Feats {
     namespace TeleportAnywhere {
-        auto zAxis = Config::get<double>("/feats/teleportAnywhere/zAxis", 0.0f);
+        Config::field<double> zAxis;
 
         void init() {
+            zAxis = Config::get<double>("/feats/teleportAnywhere/zAxis", 0.0f);
+
             Hooks::registerHook(
                 "UI_OverviewMapContainer_WarFog_BP.UI_OverviewMapContainer_WarFog_BP_C.BP_OnMapClicked",
                 [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {

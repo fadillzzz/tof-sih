@@ -13,6 +13,7 @@ namespace Config {
     void save();
 
     template <typename T> struct field {
+        field() = default;
         field(nlohmann::json::json_pointer k, T *ptr) : k(k), ptr(ptr) {}
 
         T *operator->() const { return ptr; }
