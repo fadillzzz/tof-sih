@@ -6,7 +6,7 @@ using f_DLL_ENTRY_POINT = BOOL(WINAPI *)(void *hDll, DWORD dwReason, void *pRese
 using f_RtlAddFunctionTable = BOOL(WINAPIV *)(PRUNTIME_FUNCTION FunctionTable, DWORD EntryCount, DWORD64 BaseAddress);
 #endif
 
-struct MANUAL_MAPPING_DATA {
+template <typename T> struct MANUAL_MAPPING_DATA {
     f_LoadLibraryA pLoadLibraryA;
     f_GetProcAddress pGetProcAddress;
 #ifdef _WIN64
@@ -17,13 +17,18 @@ struct MANUAL_MAPPING_DATA {
     DWORD fdwReasonParam;
     LPVOID reservedParam;
     BOOL SEHSupport;
+    void (*preMain)(T);
+    T preMainArg;
 };
 
 // Note: Exception support only x64 with build params /EHa or /EHc
-bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeader = true,
-                  bool ClearNonNeededSections = true, bool AdjustProtections = true, bool SEHExceptionSupport = true,
-                  DWORD fdwReason = DLL_PROCESS_ATTACH, LPVOID lpReserved = 0);
-void __stdcall loader(MANUAL_MAPPING_DATA *pData);
+template <typename T>
+bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, const char *preMain = "", T preMainArg = nullptr,
+                  uint32_t preMainArgSize = 0, bool ClearHeader = true, bool ClearNonNeededSections = true,
+                  bool AdjustProtections = true, bool SEHExceptionSupport = true, DWORD fdwReason = DLL_PROCESS_ATTACH,
+                  LPVOID lpReserved = 0);
+
+template <typename T> void __stdcall loader(MANUAL_MAPPING_DATA<T> *pData);
 
 #if defined(DISABLE_OUTPUT)
 #define ILog(data, ...)
@@ -37,8 +42,10 @@ void __stdcall loader(MANUAL_MAPPING_DATA *pData);
 #define CURRENT_ARCH IMAGE_FILE_MACHINE_I386
 #endif
 
-bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeader, bool ClearNonNeededSections,
-                  bool AdjustProtections, bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved) {
+template <typename T>
+bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, const char *preMain, T preMainArg,
+                  uint32_t preMainArgSize, bool ClearHeader, bool ClearNonNeededSections, bool AdjustProtections,
+                  bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved) {
     IMAGE_NT_HEADERS *pOldNtHeader = nullptr;
     IMAGE_OPTIONAL_HEADER *pOldOptHeader = nullptr;
     IMAGE_FILE_HEADER *pOldFileHeader = nullptr;
@@ -71,19 +78,6 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
     DWORD oldp = 0;
     VirtualProtectEx(hProc, pTargetBase, pOldOptHeader->SizeOfImage, PAGE_EXECUTE_READWRITE, &oldp);
 
-    MANUAL_MAPPING_DATA data{0};
-    data.pLoadLibraryA = LoadLibraryA;
-    data.pGetProcAddress = GetProcAddress;
-#ifdef _WIN64
-    data.pRtlAddFunctionTable = (f_RtlAddFunctionTable)RtlAddFunctionTable;
-#else
-    SEHExceptionSupport = false;
-#endif
-    data.pbase = pTargetBase;
-    data.fdwReasonParam = fdwReason;
-    data.reservedParam = lpReserved;
-    data.SEHSupport = SEHExceptionSupport;
-
     // File header
     if (!WriteProcessMemory(hProc, pTargetBase, pSrcData, 0x1000, nullptr)) { // only first 0x1000 bytes for the header
         ILog("Can't write file header 0x%X\n", GetLastError());
@@ -104,16 +98,66 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
         }
     }
 
+    void *resolvedPreMain = nullptr;
+
+    if (strlen(preMain) > 0) {
+        IMAGE_EXPORT_DIRECTORY exportDir;
+        ReadProcessMemory(hProc,
+                          pTargetBase + pOldOptHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress,
+                          &exportDir, sizeof(exportDir), nullptr);
+
+        for (DWORD i = 0; i < exportDir.NumberOfNames; i++) {
+            char szName[256];
+            DWORD nameOffset = 0;
+            ReadProcessMemory(hProc, pTargetBase + exportDir.AddressOfNames + i * 4, &nameOffset, sizeof(nameOffset),
+                              nullptr);
+            const auto nameAddr = pTargetBase + nameOffset;
+            ReadProcessMemory(hProc, nameAddr, &szName, sizeof(szName), nullptr);
+
+            if (strcmp(szName, preMain) == 0) {
+                DWORD funcRva = 0;
+                ReadProcessMemory(hProc, pTargetBase + exportDir.AddressOfFunctions + i * 4, &funcRva, sizeof(funcRva),
+                                  nullptr);
+
+                resolvedPreMain = pTargetBase + funcRva;
+                ILog("Found %s at %p\n", preMain, pTargetBase + funcRva);
+                break;
+            }
+        }
+    }
+
+    LPVOID pPreMainArg = 0;
+
+    if (preMainArgSize > 0) {
+        pPreMainArg = VirtualAllocEx(hProc, nullptr, preMainArgSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        WriteProcessMemory(hProc, pPreMainArg, preMainArg, preMainArgSize, nullptr);
+    }
+
+    MANUAL_MAPPING_DATA<T> data{0};
+    data.pLoadLibraryA = LoadLibraryA;
+    data.pGetProcAddress = GetProcAddress;
+#ifdef _WIN64
+    data.pRtlAddFunctionTable = (f_RtlAddFunctionTable)RtlAddFunctionTable;
+#else
+    SEHExceptionSupport = false;
+#endif
+    data.pbase = pTargetBase;
+    data.fdwReasonParam = fdwReason;
+    data.reservedParam = lpReserved;
+    data.SEHSupport = SEHExceptionSupport;
+    data.preMain = (void (*)(T))resolvedPreMain;
+    data.preMainArg = (T)pPreMainArg;
+
     // Mapping params
     BYTE *MappingDataAlloc = reinterpret_cast<BYTE *>(
-        VirtualAllocEx(hProc, nullptr, sizeof(MANUAL_MAPPING_DATA), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+        VirtualAllocEx(hProc, nullptr, sizeof(MANUAL_MAPPING_DATA<T>), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
     if (!MappingDataAlloc) {
         ILog("Target process mapping allocation failed (ex) 0x%X\n", GetLastError());
         VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
         return false;
     }
 
-    if (!WriteProcessMemory(hProc, MappingDataAlloc, &data, sizeof(MANUAL_MAPPING_DATA), nullptr)) {
+    if (!WriteProcessMemory(hProc, MappingDataAlloc, &data, sizeof(MANUAL_MAPPING_DATA<T>), nullptr)) {
         ILog("Can't write mapping 0x%X\n", GetLastError());
         VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
         VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
@@ -123,14 +167,14 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
     // Shell code
     void *pShellcode = VirtualAllocEx(hProc, nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (!pShellcode) {
-        ILog("Memory shellcode allocation failed (ex) 0x%X\n", GetLastError());
+        ILog("Memory allocation failed (ex) 0x%X\n", GetLastError());
         VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
         VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
         return false;
     }
 
-    if (!WriteProcessMemory(hProc, pShellcode, loader, 0x1000, nullptr)) {
-        ILog("Can't write shellcode 0x%X\n", GetLastError());
+    if (!WriteProcessMemory(hProc, pShellcode, loader<T>, 0x1000, nullptr)) {
+        ILog("Can't write code 0x%X\n", GetLastError());
         VirtualFreeEx(hProc, pTargetBase, 0, MEM_RELEASE);
         VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
         VirtualFreeEx(hProc, pShellcode, 0, MEM_RELEASE);
@@ -139,9 +183,7 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
 
     ILog("Mapped DLL at %p\n", pTargetBase);
     ILog("Mapping info at %p\n", MappingDataAlloc);
-    ILog("Shell code at %p\n", pShellcode);
-
-    ILog("Data allocated\n");
+    ILog("Code at %p\n", pShellcode);
 
 #ifdef _DEBUG
     ILog("My shellcode pointer %p\n", Shellcode);
@@ -154,7 +196,6 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
 
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, GetProcessId(hProc));
     if (hSnap == INVALID_HANDLE_VALUE) {
-
         return false;
     }
 
@@ -163,9 +204,7 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
 
     BOOL bRet = Thread32First(hSnap, &TE32);
     if (!bRet) {
-
         CloseHandle(hSnap);
-
         return false;
     }
 
@@ -184,14 +223,11 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
 
     HANDLE hThread = OpenThread(THREAD_SET_CONTEXT | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, FALSE, ThreadID);
     if (!hThread) {
-
         return false;
     }
 
     if (SuspendThread(hThread) == (DWORD)-1) {
-
         CloseHandle(hThread);
-
         return false;
     }
 
@@ -199,19 +235,15 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
     OldContext.ContextFlags = CONTEXT_CONTROL;
 
     if (!GetThreadContext(hThread, &OldContext)) {
-
         ResumeThread(hThread);
         CloseHandle(hThread);
-
         return false;
     }
 
     void *pCodecave = VirtualAllocEx(hProc, nullptr, 0x100, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (!pCodecave) {
-
         ResumeThread(hThread);
         CloseHandle(hThread);
-
         return false;
     }
 
@@ -319,28 +351,22 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
 #endif
 
     if (!WriteProcessMemory(hProc, pCodecave, Shellcode, sizeof(Shellcode), nullptr)) {
-
         ResumeThread(hThread);
         CloseHandle(hThread);
         VirtualFreeEx(hProc, pCodecave, 0, MEM_RELEASE);
-
         return false;
     }
 
     if (!SetThreadContext(hThread, &OldContext)) {
-
         ResumeThread(hThread);
         CloseHandle(hThread);
         VirtualFreeEx(hProc, pCodecave, 0, MEM_RELEASE);
-
         return false;
     }
 
     if (ResumeThread(hThread) == (DWORD)-1) {
-
         CloseHandle(hThread);
         VirtualFreeEx(hProc, pCodecave, 0, MEM_RELEASE);
-
         return false;
     }
 
@@ -357,7 +383,7 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
             return false;
         }
 
-        MANUAL_MAPPING_DATA data_checked{0};
+        MANUAL_MAPPING_DATA<T> data_checked{0};
         ReadProcessMemory(hProc, MappingDataAlloc, &data_checked, sizeof(data_checked), nullptr);
         hCheck = data_checked.hMod;
 
@@ -430,15 +456,9 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
         VirtualProtectEx(hProc, pTargetBase, IMAGE_FIRST_SECTION(pOldNtHeader)->VirtualAddress, PAGE_READONLY, &old);
     }
 
-    if (!WriteProcessMemory(hProc, pShellcode, emptyBuffer, 0x1000, nullptr)) {
-        ILog("WARNING: Can't clear shellcode\n");
-    }
-    if (!VirtualFreeEx(hProc, pShellcode, 0, MEM_RELEASE)) {
-        ILog("WARNING: can't release shell code memory\n");
-    }
-    if (!VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE)) {
-        ILog("WARNING: can't release mapping data memory\n");
-    }
+    WriteProcessMemory(hProc, pShellcode, emptyBuffer, 0x1000, nullptr);
+    VirtualFreeEx(hProc, pShellcode, 0, MEM_RELEASE);
+    VirtualFreeEx(hProc, MappingDataAlloc, 0, MEM_RELEASE);
 
     return true;
 }
@@ -454,7 +474,7 @@ bool ManualMapDll(HANDLE hProc, BYTE *pSrcData, SIZE_T FileSize, bool ClearHeade
 
 #pragma runtime_checks("", off)
 #pragma optimize("", off)
-void __stdcall loader(MANUAL_MAPPING_DATA *pData) {
+template <typename T> void __stdcall loader(MANUAL_MAPPING_DATA<T> *pData) {
     if (!pData) {
         pData->hMod = (HINSTANCE)0x404040;
         return;
@@ -544,6 +564,10 @@ void __stdcall loader(MANUAL_MAPPING_DATA *pData) {
     }
 
 #endif
+
+    if (pData->preMain != nullptr) {
+        pData->preMain(pData->preMainArg);
+    }
 
     _DllMain(pBase, pData->fdwReasonParam, pData->reservedParam);
 

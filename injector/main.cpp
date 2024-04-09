@@ -161,7 +161,8 @@ int main() {
     dllFile.read((char *)(pSrcData), dllSize);
     dllFile.close();
 
-    const auto result = ManualMapDll(proc, pSrcData, dllSize);
+    const auto result =
+        ManualMapDll<const wchar_t *>(proc, pSrcData, dllSize, "preMain", directory.c_str(), directory.size() * 2);
 
     if (result) {
         std::cout << "Injected successfully." << std::endl;

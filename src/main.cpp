@@ -22,11 +22,13 @@ std::vector<void *> registeredFeatures;
     name::init();                                                                                                      \
     registeredFeatures.push_back((void *)name::tick);
 
-int MainThread(HINSTANCE hInstDLL) {
-    Config::init();
-    Logger::init();
+extern "C" __declspec(dllexport) void preMain(const wchar_t *dir) { Config::setDirectory(dir); }
 
+int MainThread(HINSTANCE hInstDLL) {
+    Logger::init();
     Logger::info("Initializing...");
+
+    Config::init();
 
     while (Globals::getInstance() == nullptr) {
         Logger::info("Waiting for game instance...");
