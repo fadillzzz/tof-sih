@@ -2,14 +2,14 @@
 
 namespace Feats {
     namespace InfJump {
-        bool enabled = false;
+        auto enabled = Config::get<bool>("/feats/infJump/enabled", false);
 
         void init() {}
 
         void tick() {
             const auto character = Globals::getCharacter();
 
-            if (character != nullptr && enabled) {
+            if (character != nullptr && *enabled) {
                 character->JumpCurrentCount = 0;
             }
         }

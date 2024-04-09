@@ -22,9 +22,8 @@ std::vector<void *> registeredFeatures;
     name::init();                                                                                                      \
     registeredFeatures.push_back((void *)name::tick);
 
-void setDirectory(std::wstring directory) { Config::setDirectory(directory); }
-
 int MainThread(HINSTANCE hInstDLL) {
+    Config::init();
     Logger::init();
 
     Logger::info("Initializing...");

@@ -5,7 +5,7 @@
 
 namespace Feats {
     namespace NoClip {
-        bool enabled = false;
+        auto enabled = Config::get<bool>("/feats/noClip/enabled", false);
         bool toggleInNextTick = false;
 
         void init() {
@@ -16,7 +16,7 @@ namespace Feats {
                         const auto character = Globals::getCharacter();
 
                         if (character != nullptr) {
-                            character->SetActorEnableCollision(!enabled);
+                            character->SetActorEnableCollision(!*enabled);
                             toggleInNextTick = false;
                         }
                     }
@@ -26,7 +26,7 @@ namespace Feats {
         }
 
         void tick() {
-            if (!enabled) {
+            if (!*enabled) {
                 return;
             }
 
@@ -102,7 +102,7 @@ namespace Feats {
                     return;
                 }
 
-                if (enabled) {
+                if (*enabled) {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
                 } else {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);

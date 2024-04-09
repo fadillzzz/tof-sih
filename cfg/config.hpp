@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -11,9 +13,22 @@ namespace Config {
     void save();
 
     template <typename T> struct field {
-        field(T *ptr) : ptr(ptr) {}
+        field(nlohmann::json::json_pointer k, T *ptr) : k(k), ptr(ptr) {}
 
         T *operator->() const { return ptr; }
+
+        T &operator*() const {
+            // Wildest hack of 2024
+            // This lets us save the file whenever the pointer is being dereferenced.
+            // Ideally this only executes when there's an assignment, but I could
+            // not figure out how to do that.
+            config[k] = *ptr;
+            save();
+
+            return *ptr;
+        }
+
+        T *operator&() const { return ptr; }
 
         template <typename U> U *operator=(const U &val) {
             *ptr = val;
@@ -24,6 +39,7 @@ namespace Config {
         }
 
       private:
+        nlohmann::json::json_pointer k;
         T *ptr;
     };
 
@@ -36,7 +52,7 @@ namespace Config {
 
         auto realPtr = config[k].get_ptr<T *>();
 
-        field<T> ret = {realPtr};
+        field<T> ret = {k, realPtr};
 
         return ret;
     }
