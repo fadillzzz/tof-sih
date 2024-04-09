@@ -155,13 +155,24 @@ int main() {
 
     std::wcout << L"Injecting " + dllPath << std::endl;
 
-    const auto result = inject(qrslPid, dllPath);
+    HANDLE proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, qrslPid);
+    std::ifstream dllFile(dllPath, std::ios::binary | std::ios::ate);
+    auto dllSize = dllFile.tellg();
+    BYTE *pSrcData = new BYTE[(UINT_PTR)dllSize];
+    dllFile.seekg(0, std::ios::beg);
+    dllFile.read((char *)(pSrcData), dllSize);
+    dllFile.close();
+
+    const auto result = ManualMapDll(proc, pSrcData, dllSize);
 
     if (result) {
         std::cout << "Injected successfully." << std::endl;
     } else {
         std::cout << "Failed to inject." << std::endl;
     }
+
+    delete[] pSrcData;
+    CloseHandle(proc);
 
     std::this_thread::sleep_for(std::chrono::seconds(4));
 
