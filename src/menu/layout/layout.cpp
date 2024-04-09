@@ -6,6 +6,7 @@
 #include "../../feats/login.hpp"
 #include "../../feats/move_speed.hpp"
 #include "../../feats/no_clip.hpp"
+#include "../../feats/rapid_attack.hpp"
 #include "../../feats/quest.hpp"
 #include "../../feats/teleport_anywhere.hpp"
 #include "../../feats/teleport_nucleus.hpp"
@@ -21,6 +22,7 @@ namespace Menu {
                 Feats::Fov::menu();
                 Feats::InfJump::menu();
                 Feats::NoClip::menu();
+                Feats::RapidAttack::menu();
                 Feats::UidEdit::menu();
                 ImGui::EndTabItem();
             }
