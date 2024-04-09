@@ -4,35 +4,38 @@
 
 namespace Feats {
     namespace TeleportAnywhere {
-        float zAxis = 0.0f;
+        Config::field<double> zAxis;
 
         void init() {
-            Hooks::registerHook("UI_OverviewMapContainer_WarFog_BP.UI_OverviewMapContainer_WarFog_BP_C.BP_OnMapClicked",
-                                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
-                                    // If the T key is held down
-                                    if (GetAsyncKeyState(0x54) < 0) {
-                                        const auto typedParams = ((
-                                            SDK::Params::UI_OverviewMapContainer_WarFog_BP_C_BP_OnMapClicked *)pParams);
+            zAxis = Config::get<double>("/feats/teleportAnywhere/zAxis", 0.0f);
 
-                                        const auto character = Globals::getCharacter();
-                                        auto rotation = character->K2_GetActorRotation();
-                                        typedParams->InWorldLocation.Z = zAxis;
+            Hooks::registerHook(
+                "UI_OverviewMapContainer_WarFog_BP.UI_OverviewMapContainer_WarFog_BP_C.BP_OnMapClicked",
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
+                    // If the T key is held down
+                    if (GetAsyncKeyState(0x54) < 0) {
+                        const auto typedParams =
+                            ((SDK::Params::UI_OverviewMapContainer_WarFog_BP_C_BP_OnMapClicked *)pParams);
 
-                                        const auto typedObject = (SDK::UUI_OverviewMapContainer_WarFog_BP_C *)pObject;
-                                        typedObject->RemoveFromParent();
+                        const auto character = Globals::getCharacter();
+                        auto rotation = character->K2_GetActorRotation();
+                        typedParams->InWorldLocation.Z = *zAxis;
 
-                                        character->TeleportWithLoading(typedParams->InWorldLocation, rotation);
-                                    }
+                        const auto typedObject = (SDK::UUI_OverviewMapContainer_WarFog_BP_C *)pObject;
+                        typedObject->RemoveFromParent();
 
-                                    return Hooks::CONTINUE_EXECUTION;
-                                });
+                        character->TeleportWithLoading(typedParams->InWorldLocation, rotation);
+                    }
+
+                    return Hooks::CONTINUE_EXECUTION;
+                });
         }
 
         void tick() { return; }
 
         void menu() {
             ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.2f);
-            ImGui::InputFloat("Teleport Anywhere Z axis (height)", &zAxis);
+            ImGui::InputDouble("Teleport Anywhere Z axis (height)", &zAxis);
             ImGui::PopItemWidth();
             ImGui::Text("Press T while clicking on the map to teleport to that location.");
         }

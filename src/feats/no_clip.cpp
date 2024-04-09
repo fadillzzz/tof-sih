@@ -5,10 +5,12 @@
 
 namespace Feats {
     namespace NoClip {
-        bool enabled = false;
+        Config::field<bool> enabled;
         bool toggleInNextTick = false;
 
         void init() {
+            enabled = Config::get<bool>("/feats/noClip/enabled", false);
+
             Hooks::registerHook(
                 "Engine.ActorComponent.ReceiveTick",
                 [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
@@ -16,7 +18,7 @@ namespace Feats {
                         const auto character = Globals::getCharacter();
 
                         if (character != nullptr) {
-                            character->SetActorEnableCollision(!enabled);
+                            character->SetActorEnableCollision(!*enabled);
                             toggleInNextTick = false;
                         }
                     }
@@ -26,7 +28,7 @@ namespace Feats {
         }
 
         void tick() {
-            if (!enabled) {
+            if (!*enabled) {
                 return;
             }
 
@@ -102,7 +104,7 @@ namespace Feats {
                     return;
                 }
 
-                if (enabled) {
+                if (*enabled) {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
                 } else {
                     character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);

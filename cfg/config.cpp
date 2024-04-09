@@ -45,7 +45,7 @@ namespace Config {
     }
 
     void save() {
-        if (std::chrono::system_clock::now() - lastSave > std::chrono::milliseconds(250)) {
+        if (std::chrono::system_clock::now() - lastSave > std::chrono::seconds(5)) {
             std::thread saveThread(&actualSave);
             saveThread.detach();
         }

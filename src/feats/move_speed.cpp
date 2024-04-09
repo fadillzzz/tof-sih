@@ -4,8 +4,10 @@
 namespace Feats {
     namespace MoveSpeed {
         float defaultSpeed = 0.0f;
-        float speed = 0.0f;
-        bool enabled = false;
+        double minSpeed = 1.0f;
+        double maxSpeed = 10000.0f;
+        Config::field<double> speed;
+        Config::field<bool> enabled;
 
         void applySpeed(float newSpeed) {
             const auto character = Globals::getCharacter();
@@ -16,32 +18,35 @@ namespace Feats {
         }
 
         void tick() {
-            if (enabled) {
-                applySpeed(speed);
+            if (*enabled) {
+                applySpeed(*speed);
             }
         }
 
-        void init() { return; }
+        void init() {
+            speed = Config::get<double>("/feats/moveSpeed/speed", 0.0f);
+            enabled = Config::get<bool>("/feats/moveSpeed/enabled", false);
+        }
 
         void menu() {
-            if (speed <= 0.0f) {
+            if (*speed <= 0.0f) {
                 const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
                     speed = character->PlayMaxWalkSpeed;
-                    defaultSpeed = speed;
+                    defaultSpeed = *speed;
                 }
             }
 
             if (ImGui::Checkbox("Enable Movement Speed", &enabled)) {
-                if (!enabled) {
+                if (!*enabled) {
                     applySpeed(defaultSpeed);
                 }
             }
 
             ImGui::Indent();
             ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
-            ImGui::SliderFloat("Movement speed", &speed, 1.0f, 10000.0f);
+            ImGui::SliderScalar("Movement speed", ImGuiDataType_Double, &speed, &minSpeed, &maxSpeed);
             ImGui::PopItemWidth();
             ImGui::Unindent();
         }

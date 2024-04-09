@@ -17,3 +17,5 @@
 
 #include "../CppSDK/SDK.hpp"
 #include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
+#include "config.hpp"
