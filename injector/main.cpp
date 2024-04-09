@@ -1,9 +1,5 @@
-#define WIN32_LEAN_AND_MEAN
-
-#include "ManualMap/MMap.h"
-#include "Process/Process.h"
 #include "config.hpp"
-#include <shellapi.h>
+#include "inject.hpp"
 
 typedef void (*setDirectory)(std::wstring directory);
 typedef int (*init)(HINSTANCE hInstDLL);
@@ -50,7 +46,7 @@ PWSTR askForLauncherPath() {
     return pszFilePath;
 }
 
-bool startLauncher(std::string *launcherPath) {
+bool startLauncher(const wchar_t *launcherPath) {
     STARTUPINFO si;
     si.cb = sizeof(si);
     ZeroMemory(&si, sizeof(si));
@@ -59,9 +55,8 @@ bool startLauncher(std::string *launcherPath) {
 
     SetEnvironmentVariable(L"__COMPAT_LAYER", L"RUNASINVOKER");
 
-    wchar_t *wideLauncherPath = (wchar_t *)std::wstring(launcherPath->begin(), launcherPath->end()).c_str();
     const auto launcherProcessResult =
-        CreateProcess(wideLauncherPath, wideLauncherPath, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
+        CreateProcess(launcherPath, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
 
     if (!launcherProcessResult) {
         std::cout << "Failed to start the launcher. Exiting..." << std::endl;
@@ -76,12 +71,31 @@ bool startLauncher(std::string *launcherPath) {
     return true;
 }
 
+DWORD GetProcId(const wchar_t *procName) {
+    DWORD procId = 0;
+    HANDLE handleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+    if (handleSnapshot != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32 procEntry;
+        procEntry.dwSize = sizeof(procEntry);
+
+        while (Process32Next(handleSnapshot, &procEntry)) {
+            if (_wcsicmp(procEntry.szExeFile, procName) == 0) {
+                procId = procEntry.th32ProcessID;
+                break;
+            }
+        }
+    }
+
+    CloseHandle(handleSnapshot);
+
+    return procId;
+}
+
 int main() {
-    blackbone::Process launcherChecker;
+    const auto launcherPid = GetProcId(L"tof_launcher.exe");
 
-    const auto checkResult = launcherChecker.Attach(L"tof_launcher.exe");
-
-    if (NT_SUCCESS(checkResult)) {
+    if (launcherPid != 0) {
         std::cout << "Launcher is already running." << std::endl;
         std::cout << "If it wasn't started by this injector. Please close it and launch the injector again."
                   << std::endl;
@@ -115,34 +129,38 @@ int main() {
         }
     }
 
-    Config::shutdown();
+    auto wideLauncherPath = std::wstring(launcherPath->begin(), launcherPath->end());
 
-    if (!startLauncher(launcherPath)) {
+    if (!startLauncher(wideLauncherPath.c_str())) {
         return 1;
     }
 
+    Config::shutdown();
+
     std::cout << "Launcher has been started. Please start the game from the launcher." << std::endl;
 
-    blackbone::Process qrslProcess;
+    DWORD qrslPid = 0;
 
     while (true) {
-        const auto attachResult = qrslProcess.Attach(L"QRSL.exe");
+        qrslPid = GetProcId(L"QRSL.exe");
 
-        if (NT_SUCCESS(attachResult)) {
+        if (qrslPid != 0) {
             break;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    std::wcout << L"Injecting " + directory + L"TOFInternal.dll" << std::endl;
+    const auto dllPath = directory + L"TOFInternal.dll";
 
-    const auto result = qrslProcess.modules().Inject(directory + L"TOFInternal.dll");
+    std::wcout << L"Injecting " + dllPath << std::endl;
 
-    if (result.success()) {
+    const auto result = inject(qrslPid, dllPath);
+
+    if (result) {
         std::cout << "Injected successfully." << std::endl;
     } else {
-        std::cout << "Failed to inject. Status: " << result.status << std::endl;
+        std::cout << "Failed to inject." << std::endl;
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(4));

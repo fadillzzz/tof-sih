@@ -80,7 +80,10 @@
         "span": "cpp",
         "unordered_set": "cpp",
         "valarray": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "cwctype": "cpp",
+        "future": "cpp"
     },
     "cmake.preferredGenerators": [
         "Visual Studio 17 2022"
