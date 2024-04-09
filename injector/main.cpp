@@ -119,9 +119,7 @@ int main() {
 
         if (!path.empty()) {
             const auto multiBytePath = _bstr_t(path.c_str());
-            Config::config["launcherPath"] = multiBytePath;
-            Config::save();
-            launcherPath = Config::get<nlohmann::json::string_t>("/launcherPath", "");
+            launcherPath = multiBytePath;
         } else {
             std::wcout << L"Launcher path not given. Exiting..." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(3));

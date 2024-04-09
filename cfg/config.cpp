@@ -1,12 +1,3 @@
-#define WIN32_LEAN_AND_MEAN
-
-#include <Windows.h>
-#include <cstdint>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <nlohmann/json.hpp>
-
 #include "config.hpp"
 
 namespace Config {
@@ -14,6 +5,7 @@ namespace Config {
     std::wstring directory = L"";
     std::wstring filePath = L"";
     std::ofstream output;
+    std::chrono::time_point<std::chrono::system_clock> lastSave;
 
     void setDirectory(std::wstring directory) { Config::directory = directory; }
 
@@ -45,10 +37,19 @@ namespace Config {
         }
     }
 
+    void actualSave() {
+        if (std::chrono::system_clock::now() - lastSave > std::chrono::milliseconds(250)) {
+            output = std::ofstream(filePath);
+            output << config;
+            output.close();
+        }
+    }
+
     void save() {
-        output = std::ofstream(filePath);
-        output << config;
-        output.close();
+        lastSave = std::chrono::system_clock::now();
+
+        std::thread saveThread(actualSave);
+        saveThread.detach();
     }
 
     void shutdown() { save(); }
