@@ -1,5 +1,6 @@
 #include "move_speed.hpp"
 #include "../globals.hpp"
+#include "hotkey.hpp"
 
 namespace Feats {
     namespace MoveSpeed {
@@ -18,14 +19,22 @@ namespace Feats {
         }
 
         void tick() {
+            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
+                *enabled = !*enabled;
+
+                if (!*enabled) {
+                    applySpeed(defaultSpeed);
+                }
+            }
+
             if (*enabled) {
                 applySpeed(*speed);
             }
         }
 
         void init() {
-            speed = Config::get<double>("/feats/moveSpeed/speed", 0.0f);
-            enabled = Config::get<bool>("/feats/moveSpeed/enabled", false);
+            speed = Config::get<double>(confSpeed, 0.0f);
+            enabled = Config::get<bool>(confEnabled, false);
         }
 
         void menu() {

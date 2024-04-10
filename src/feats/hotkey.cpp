@@ -1,5 +1,8 @@
 #include "hotkey.hpp"
 #include "../logger/logger.hpp"
+#include "move_speed.hpp"
+#include "no_clip.hpp"
+#include "quest.hpp"
 #include "teleport_anywhere.hpp"
 #include "teleport_nucleus.hpp"
 #include "uid_edit.hpp"
@@ -20,7 +23,12 @@ namespace Feats {
             ASSIGN_BINDINGS("UID editor", Feats::UidEdit::confToggleEnabled);
             ASSIGN_BINDINGS("Teleport nucleus", Feats::TeleportNucleus::confActivate);
             ASSIGN_BINDINGS("Teleport anywhere", Feats::TeleportAnywhere::confActivate);
-            return;
+            ASSIGN_BINDINGS("Complete main quest(s)", Feats::Quest::confActivateMain);
+            ASSIGN_BINDINGS("Complete Daily", Feats::Quest::confActivateDaily);
+            ASSIGN_BINDINGS("Complete Weekly", Feats::Quest::confActivateWeekly);
+            ASSIGN_BINDINGS("Complete All", Feats::Quest::confActivateAll);
+            ASSIGN_BINDINGS("No clip", Feats::NoClip::confToggleEnabled);
+            ASSIGN_BINDINGS("Movement speed", Feats::MoveSpeed::confToggleEnabled);
         }
 
         void tick() {

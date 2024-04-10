@@ -13,7 +13,6 @@ namespace Feats {
             Hooks::registerHook(
                 "UI_OverviewMapContainer_WarFog_BP.UI_OverviewMapContainer_WarFog_BP_C.BP_OnMapClicked",
                 [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
-                    // If the T key is held down
                     if (Feats::Hotkey::hotkeyPressed(confActivate)) {
                         const auto typedParams =
                             ((SDK::Params::UI_OverviewMapContainer_WarFog_BP_C_BP_OnMapClicked *)pParams);
@@ -38,7 +37,7 @@ namespace Feats {
             ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.2f);
             ImGui::InputDouble("Teleport Anywhere Z axis (height)", &zAxis);
             ImGui::PopItemWidth();
-            ImGui::Text("Press T while clicking on the map to teleport to that location.");
+            ImGui::Text("Teleport anywhere hotkey can be bound under the hotkey tab.");
         }
     } // namespace TeleportAnywhere
 } // namespace Feats
