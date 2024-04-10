@@ -68,7 +68,7 @@ int MainThread(HINSTANCE hInstDLL) {
 
     Hooks::shutdown();
     Menu::shutdown();
-
+    Config::shutdown();
     Logger::shutdown();
     FreeLibraryAndExitThread(hInstDLL, 0);
 
