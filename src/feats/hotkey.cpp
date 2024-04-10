@@ -82,6 +82,10 @@ namespace Feats {
                 keyPressTimes.push_back(keyLastPressTime[key]);
             }
 
+            if (keyPressTimes.size() == 0) {
+                return false;
+            }
+
             const auto minTime = std::min_element(keyPressTimes.begin(), keyPressTimes.end());
             const auto maxTime = std::max_element(keyPressTimes.begin(), keyPressTimes.end());
 
