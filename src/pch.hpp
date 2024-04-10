@@ -12,10 +12,12 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <set>
 #include <thread>
 #include <vector>
 
 #include "../CppSDK/SDK.hpp"
+#define IMGUI_DISABLE_OBSOLETE_KEYIO
+#include "config.hpp"
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
-#include "config.hpp"

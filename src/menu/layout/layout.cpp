@@ -2,6 +2,7 @@
 #include "../../feats/about.hpp"
 #include "../../feats/chain_logging.hpp"
 #include "../../feats/fov.hpp"
+#include "../../feats/hotkey.hpp"
 #include "../../feats/inf_jump.hpp"
 #include "../../feats/login.hpp"
 #include "../../feats/move_speed.hpp"
@@ -34,6 +35,11 @@ namespace Menu {
 
             if (ImGui::BeginTabItem("Misc")) {
                 Feats::Login::menu();
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Hotkeys")) {
+                Feats::Hotkey::menu();
                 ImGui::EndTabItem();
             }
 

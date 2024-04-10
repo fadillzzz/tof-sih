@@ -2,6 +2,7 @@
 #include "../globals.hpp"
 #include "../hooks.hpp"
 #include "../logger/logger.hpp"
+#include "hotkey.hpp"
 
 #define USE_UID(typed, uid)                                                                                            \
     std::wstring wideCustomUid = std::wstring(uid, uid + strlen(uid));                                                 \
@@ -32,8 +33,8 @@ namespace Feats {
         }
 
         void init() {
-            enabled = Config::get<bool>("/feats/uidEdit/enabled", false);
-            customUid = Config::get<std::string>("/feats/uidEdit/customUid", "TOF-SIH");
+            enabled = Config::get<bool>(confPrefix + "/enabled", false);
+            customUid = Config::get<std::string>(confPrefix + "/customUid", "TOF-SIH");
 
             Hooks::registerHook(
                 "UI_BasicSettings.UI_BasicSettings_C.Construct",
@@ -66,15 +67,25 @@ namespace Feats {
                 Hooks::Type::POST);
         }
 
+        void toggle() {
+            const auto topRole = Globals::getObject<SDK::UUI_TopRoleID_C *>(SDK::UUI_TopRoleID_C::StaticClass());
+
+            if (topRole != nullptr) {
+                applyChanges(topRole, false);
+            }
+        }
+
         void tick() { return; }
 
         void menu() {
             if (ImGui::Checkbox("Enable custom UID", &enabled)) {
-                const auto topRole = Globals::getObject<SDK::UUI_TopRoleID_C *>(SDK::UUI_TopRoleID_C::StaticClass());
+                toggle();
+            }
 
-                if (topRole != nullptr) {
-                    applyChanges(topRole, false);
-                }
+            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
+                *enabled = !*enabled;
+
+                toggle();
             }
 
             ImGui::Indent();

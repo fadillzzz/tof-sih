@@ -33,7 +33,7 @@ namespace Feats {
                 const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
-                    speed = character->PlayMaxWalkSpeed;
+                    *speed = character->PlayMaxWalkSpeed;
                     defaultSpeed = *speed;
                 }
             }
