@@ -1,6 +1,7 @@
 #include "teleport_anywhere.hpp"
 #include "../globals.hpp"
 #include "../hooks.hpp"
+#include "hotkey.hpp"
 
 namespace Feats {
     namespace TeleportAnywhere {
@@ -13,7 +14,7 @@ namespace Feats {
                 "UI_OverviewMapContainer_WarFog_BP.UI_OverviewMapContainer_WarFog_BP_C.BP_OnMapClicked",
                 [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
                     // If the T key is held down
-                    if (GetAsyncKeyState(0x54) < 0) {
+                    if (Feats::Hotkey::hotkeyPressed(confActivate)) {
                         const auto typedParams =
                             ((SDK::Params::UI_OverviewMapContainer_WarFog_BP_C_BP_OnMapClicked *)pParams);
 

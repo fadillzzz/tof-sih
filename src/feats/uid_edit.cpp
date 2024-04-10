@@ -75,16 +75,16 @@ namespace Feats {
             }
         }
 
-        void tick() { return; }
-
-        void menu() {
-            if (ImGui::Checkbox("Enable custom UID", &enabled)) {
-                toggle();
-            }
-
+        void tick() {
             if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
                 *enabled = !*enabled;
 
+                toggle();
+            }
+        }
+
+        void menu() {
+            if (ImGui::Checkbox("Enable custom UID", &enabled)) {
                 toggle();
             }
 

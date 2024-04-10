@@ -1,6 +1,12 @@
 #include "hotkey.hpp"
 #include "../logger/logger.hpp"
+#include "teleport_anywhere.hpp"
+#include "teleport_nucleus.hpp"
 #include "uid_edit.hpp"
+
+#define ASSIGN_BINDINGS(label, key)                                                                                    \
+    bindings[label] = Config::get<std::set<ImGuiKey>>(key, {});                                                        \
+    pathToKeys[key] = &bindings[label];
 
 namespace Feats {
     namespace Hotkey {
@@ -11,8 +17,9 @@ namespace Feats {
         std::string bindingKey = "";
 
         void init() {
-            bindings["UID editor"] = Config::get<std::set<ImGuiKey>>(Feats::UidEdit::confToggleEnabled, {});
-            pathToKeys[Feats::UidEdit::confToggleEnabled] = &bindings["UID editor"];
+            ASSIGN_BINDINGS("UID editor", Feats::UidEdit::confToggleEnabled);
+            ASSIGN_BINDINGS("Teleport nucleus", Feats::TeleportNucleus::confActivate);
+            ASSIGN_BINDINGS("Teleport anywhere", Feats::TeleportAnywhere::confActivate);
             return;
         }
 
