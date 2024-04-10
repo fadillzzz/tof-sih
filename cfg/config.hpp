@@ -12,7 +12,7 @@ namespace Config {
     void setDirectory(std::wstring directory);
     void init();
     void shutdown();
-    void save(bool = false);
+    void save();
 
     template <typename T>
     concept isVectorOrSet =
@@ -26,12 +26,7 @@ namespace Config {
         T *operator->() const { return ptr; }
 
         T &operator*() const {
-            // Wildest hack of 2024
-            // This lets us save the file whenever the pointer is being dereferenced.
-            // Ideally this only executes when there's an assignment, but I could
-            // not figure out how to do that.
             config[k] = *ptr;
-            save();
 
             return *ptr;
         }
@@ -41,7 +36,6 @@ namespace Config {
         std::string operator=(const std::string &val) {
             *ptr = val;
             config[k] = *ptr;
-            save();
 
             return val;
         }

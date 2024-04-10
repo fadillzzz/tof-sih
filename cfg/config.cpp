@@ -62,9 +62,10 @@ namespace Config {
 
         shuttingDown = false;
         saveThreadStarted = false;
+        save();
     }
 
-    void save(bool force) {
+    void save() {
         if (saveThreadStarted) {
             return;
         }
