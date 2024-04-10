@@ -1,7 +1,9 @@
 #pragma once
 
+#include <concepts>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <set>
 #include <string>
 
 namespace Config {
@@ -12,8 +14,13 @@ namespace Config {
     void shutdown();
     void save();
 
+    template <typename T>
+    concept isVectorOrSet =
+        std::is_same_v<T, std::vector<typename T::value_type>> || std::is_same_v<T, std::set<typename T::value_type>>;
+
     template <typename T> struct field {
         field() = default;
+        template <isVectorOrSet T> field(nlohmann::json::json_pointer k, T val) : k(k) { ptr = new T(val); }
         field(nlohmann::json::json_pointer k, T *ptr) : k(k), ptr(ptr) {}
 
         T *operator->() const { return ptr; }
@@ -31,18 +38,24 @@ namespace Config {
 
         T *operator&() const { return ptr; }
 
-        template <typename U> U *operator=(const U &val) {
-            *ptr = val;
-
-            save();
-
-            return (U *)ptr;
-        }
-
       private:
         nlohmann::json::json_pointer k;
         T *ptr;
     };
+
+    template <isVectorOrSet T> Config::field<T> get(const std::string key, T def) {
+        auto k = nlohmann::json::json_pointer(key);
+
+        if (!config.contains(k)) {
+            config[k] = def;
+        }
+
+        auto realPtr = config[k].get<T>();
+
+        field<T> ret = {k, realPtr};
+
+        return ret;
+    }
 
     template <typename T> Config::field<T> get(const std::string key, T def) {
         auto k = nlohmann::json::json_pointer(key);

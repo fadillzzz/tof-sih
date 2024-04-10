@@ -2,6 +2,7 @@
 #include "../globals.hpp"
 #include "../hooks.hpp"
 #include "../logger/logger.hpp"
+#include "hotkey.hpp"
 
 namespace Feats {
     namespace NoClip {
@@ -9,7 +10,7 @@ namespace Feats {
         bool toggleInNextTick = false;
 
         void init() {
-            enabled = Config::get<bool>("/feats/noClip/enabled", false);
+            enabled = Config::get<bool>(confEnabled, false);
 
             Hooks::registerHook(
                 "Engine.ActorComponent.ReceiveTick",
@@ -27,7 +28,27 @@ namespace Feats {
                 });
         }
 
+        void toggle() {
+            const auto character = Globals::getCharacter();
+
+            if (character == nullptr) {
+                return;
+            }
+
+            if (*enabled) {
+                character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
+            } else {
+                character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
+            }
+
+            toggleInNextTick = true;
+        }
+
         void tick() {
+            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
+                toggle();
+            }
+
             if (!*enabled) {
                 return;
             }
@@ -98,19 +119,7 @@ namespace Feats {
 
         void menu() {
             if (ImGui::Checkbox("No Clip", &enabled)) {
-                const auto character = Globals::getCharacter();
-
-                if (character == nullptr) {
-                    return;
-                }
-
-                if (*enabled) {
-                    character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
-                } else {
-                    character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
-                }
-
-                toggleInNextTick = true;
+                toggle();
             }
         }
     } // namespace NoClip

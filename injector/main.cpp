@@ -110,7 +110,7 @@ int main() {
     Config::setDirectory(directory);
     Config::init();
 
-    auto launcherPath = Config::get<nlohmann::json::string_t>("/launcherPath", "");
+    auto launcherPath = Config::get<std::string>("/launcherPath", "");
 
     if (launcherPath->empty()) {
         std::wcout << L"Launcher path not found. Please select the launcher path." << std::endl;
@@ -118,8 +118,8 @@ int main() {
         const auto path = std::wstring(askForLauncherPath());
 
         if (!path.empty()) {
-            const auto multiBytePath = _bstr_t(path.c_str());
-            launcherPath = multiBytePath;
+            std::string multiBytePath(path.begin(), path.end());
+            *launcherPath = multiBytePath;
         } else {
             std::wcout << L"Launcher path not given. Exiting..." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(3));

@@ -3,6 +3,7 @@
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
 #include "feats/fov.hpp"
+#include "feats/hotkey.hpp"
 #include "feats/inf_jump.hpp"
 #include "feats/login.hpp"
 #include "feats/move_speed.hpp"
@@ -18,7 +19,7 @@
 
 std::vector<void *> registeredFeatures;
 
-#define registerFeature(name)                                                                                          \
+#define REGISTER_FEATURE(name)                                                                                         \
     name::init();                                                                                                      \
     registeredFeatures.push_back((void *)name::tick);
 
@@ -40,17 +41,18 @@ int MainThread(HINSTANCE hInstDLL) {
     Menu::init();
     Hooks::init();
 
-    registerFeature(Feats::AntiAntiCheat);
-    registerFeature(Feats::MoveSpeed);
-    registerFeature(Feats::Fov);
-    registerFeature(Feats::InfJump);
-    registerFeature(Feats::TeleportNucleus);
-    registerFeature(Feats::Quest);
-    registerFeature(Feats::Login);
-    registerFeature(Feats::TeleportAnywhere);
-    registerFeature(Feats::ChainLogging);
-    registerFeature(Feats::NoClip);
-    registerFeature(Feats::UidEdit);
+    REGISTER_FEATURE(Feats::AntiAntiCheat);
+    REGISTER_FEATURE(Feats::MoveSpeed);
+    REGISTER_FEATURE(Feats::Fov);
+    REGISTER_FEATURE(Feats::InfJump);
+    REGISTER_FEATURE(Feats::TeleportNucleus);
+    REGISTER_FEATURE(Feats::Quest);
+    REGISTER_FEATURE(Feats::Login);
+    REGISTER_FEATURE(Feats::TeleportAnywhere);
+    REGISTER_FEATURE(Feats::ChainLogging);
+    REGISTER_FEATURE(Feats::NoClip);
+    REGISTER_FEATURE(Feats::UidEdit);
+    REGISTER_FEATURE(Feats::Hotkey);
 
     while (true) {
         if (GetAsyncKeyState(VK_END) & 1) {
