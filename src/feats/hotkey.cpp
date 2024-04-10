@@ -155,6 +155,9 @@ namespace Feats {
                     if (ImGui::Button(label.c_str())) {
                         bindingKey = currentBindingKey;
                         currentImGuiKeys->clear();
+                        // Hack: Triggers an update to the underlying data in the config
+                        // so that the changes are saved.
+                        *currentImGuiKeys;
                     }
 
                     ImGui::PopID();
