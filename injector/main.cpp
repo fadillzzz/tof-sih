@@ -1,5 +1,5 @@
 #include "config.hpp"
-#include "inject.hpp"
+#include "manual.hpp"
 
 typedef void (*setDirectory)(std::wstring directory);
 typedef int (*init)(HINSTANCE hInstDLL);
@@ -118,8 +118,10 @@ int main() {
         const auto path = std::wstring(askForLauncherPath());
 
         if (!path.empty()) {
-            std::string multiBytePath(path.begin(), path.end());
-            *launcherPath = multiBytePath;
+            char multiBytePath[2048];
+            const auto convertRes =
+                WideCharToMultiByte(CP_UTF8, 0, path.c_str(), -1, multiBytePath, 2048, nullptr, nullptr);
+            launcherPath = std::string(multiBytePath);
         } else {
             std::wcout << L"Launcher path not given. Exiting..." << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(3));

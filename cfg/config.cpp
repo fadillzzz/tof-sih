@@ -5,9 +5,19 @@ namespace Config {
     std::wstring directory = L"";
     std::wstring filePath = L"";
     std::ofstream output;
-    std::chrono::time_point<std::chrono::system_clock> lastSave = std::chrono::system_clock::now();
+    std::chrono::time_point<std::chrono::system_clock> lastSave =
+        std::chrono::system_clock::now() - std::chrono::seconds(5);
 
     void setDirectory(std::wstring directory) { Config::directory = directory; }
+
+    void actualSave(bool dontWriteLastSave = false) {
+        output = std::ofstream(filePath);
+        output << config;
+        output.close();
+        if (!dontWriteLastSave) {
+            lastSave = std::chrono::system_clock::now();
+        }
+    }
 
     void init() {
         if (directory.empty()) {
@@ -30,6 +40,7 @@ namespace Config {
 
         if (size == 0) {
             config = nlohmann::json::object();
+            actualSave(true);
         } else {
             std::ifstream file(filePath);
             config = nlohmann::json::parse(file);
@@ -37,16 +48,9 @@ namespace Config {
         }
     }
 
-    void actualSave() {
-        output = std::ofstream(filePath);
-        output << config;
-        output.close();
-        lastSave = std::chrono::system_clock::now();
-    }
-
-    void save() {
-        if (std::chrono::system_clock::now() - lastSave > std::chrono::seconds(5)) {
-            std::thread saveThread(&actualSave);
+    void save(bool force) {
+        if ((std::chrono::system_clock::now() - lastSave > std::chrono::seconds(5)) || force) {
+            std::thread saveThread([]() { actualSave(); });
             saveThread.detach();
         }
     }

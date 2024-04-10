@@ -12,7 +12,7 @@ namespace Config {
     void setDirectory(std::wstring directory);
     void init();
     void shutdown();
-    void save();
+    void save(bool = false);
 
     template <typename T>
     concept isVectorOrSet =
@@ -37,6 +37,14 @@ namespace Config {
         }
 
         T *operator&() const { return ptr; }
+
+        std::string operator=(const std::string &val) {
+            *ptr = val;
+            config[k] = *ptr;
+            save();
+
+            return val;
+        }
 
       private:
         nlohmann::json::json_pointer k;
