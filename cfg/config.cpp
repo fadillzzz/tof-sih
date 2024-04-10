@@ -7,6 +7,8 @@ namespace Config {
     std::ofstream output;
     std::chrono::time_point<std::chrono::system_clock> lastSave =
         std::chrono::system_clock::now() - std::chrono::seconds(5);
+    bool saveThreadStarted = false;
+    bool shuttingDown = false;
 
     void setDirectory(std::wstring directory) { Config::directory = directory; }
 
@@ -16,6 +18,17 @@ namespace Config {
         output.close();
         if (!dontWriteLastSave) {
             lastSave = std::chrono::system_clock::now();
+        }
+    }
+
+    void saveLoop() {
+        while (true) {
+            if (shuttingDown) {
+                return;
+            }
+
+            actualSave();
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }
 
@@ -46,14 +59,21 @@ namespace Config {
             config = nlohmann::json::parse(file);
             file.close();
         }
+
+        shuttingDown = false;
+        saveThreadStarted = false;
     }
 
     void save(bool force) {
-        if ((std::chrono::system_clock::now() - lastSave > std::chrono::seconds(5)) || force) {
-            std::thread saveThread([]() { actualSave(); });
-            saveThread.detach();
+        if (saveThreadStarted) {
+            return;
         }
+
+        std::thread loop(saveLoop);
+        loop.detach();
+
+        saveThreadStarted = true;
     }
 
-    void shutdown() { save(); }
+    void shutdown() { shuttingDown = true; }
 } // namespace Config
