@@ -10,7 +10,7 @@ namespace Config {
     extern nlohmann::json config;
 
     void setDirectory(std::wstring directory);
-    void init();
+    void init(HMODULE handle = nullptr);
     void shutdown();
     void save();
 

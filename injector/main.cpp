@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "inject.hpp"
 #include "manual.hpp"
 
 typedef void (*setDirectory)(std::wstring directory);
@@ -135,7 +136,16 @@ int main() {
         return 1;
     }
 
-    Config::shutdown();
+    auto configuredInjectionMethod = Config::get<std::string>("/injectionMethod", "");
+    std::string injectionMethod = "loadLibrary";
+
+    if (!configuredInjectionMethod->empty()) {
+        injectionMethod = std::string(configuredInjectionMethod->begin(), configuredInjectionMethod->end());
+    } else {
+        configuredInjectionMethod = injectionMethod;
+    }
+
+    std::cout << "Injection method: " << injectionMethod << std::endl;
 
     std::cout << "Launcher has been started. Please start the game from the launcher." << std::endl;
 
@@ -156,15 +166,38 @@ int main() {
     std::wcout << L"Injecting " + dllPath << std::endl;
 
     HANDLE proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, qrslPid);
-    std::ifstream dllFile(dllPath, std::ios::binary | std::ios::ate);
-    auto dllSize = dllFile.tellg();
-    BYTE *pSrcData = new BYTE[(UINT_PTR)dllSize];
-    dllFile.seekg(0, std::ios::beg);
-    dllFile.read((char *)(pSrcData), dllSize);
-    dllFile.close();
+    bool result = false;
 
-    const auto result =
-        ManualMapDll<const wchar_t *>(proc, pSrcData, dllSize, "preMain", directory.c_str(), directory.size() * 2);
+    if (injectionMethod == "manual") {
+        std::ifstream dllFile(dllPath, std::ios::binary | std::ios::ate);
+        auto dllSize = dllFile.tellg();
+        BYTE *pSrcData = new BYTE[(UINT_PTR)dllSize];
+        dllFile.seekg(0, std::ios::beg);
+        dllFile.read((char *)(pSrcData), dllSize);
+        dllFile.close();
+
+        result =
+            ManualMapDll<const wchar_t *>(proc, pSrcData, dllSize, "preMain", directory.c_str(), directory.size() * 2);
+
+        delete[] pSrcData;
+    } else if (injectionMethod == "loadLibrary") {
+        std::cout << "Press F1 to start injection. This is preferably done at the login screen and not when the game "
+                     "is loading."
+                  << std::endl;
+        while (true) {
+            if (GetAsyncKeyState(VK_F1) & 1) {
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+        result = InjectDll(proc, dllPath.c_str());
+    } else {
+        std::cout << "Invalid injection method." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        return 1;
+    }
 
     if (result) {
         std::cout << "Injected successfully." << std::endl;
@@ -172,8 +205,9 @@ int main() {
         std::cout << "Failed to inject." << std::endl;
     }
 
-    delete[] pSrcData;
     CloseHandle(proc);
+
+    Config::shutdown();
 
     std::this_thread::sleep_for(std::chrono::seconds(4));
 
