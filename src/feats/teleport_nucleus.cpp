@@ -1,5 +1,6 @@
 #include "teleport_nucleus.hpp"
 #include "../globals.hpp"
+#include "../logger/logger.hpp"
 #include "hotkey.hpp"
 
 namespace Feats {
@@ -10,8 +11,23 @@ namespace Feats {
             const auto character = Globals::getCharacter();
 
             if (character != nullptr) {
-                const auto nuclei =
-                    Globals::getAllObjects<SDK::ABP_Harvest_Gem_Base_C *>(SDK::ABP_Harvest_Gem_Base_C::StaticClass());
+                const auto world = Globals::getWorld();
+
+                auto nuclei = Globals::getAllObjects<SDK::AActor *>(world->GetName() == "Vera_city"
+                                                                        ? SDK::AVeraCity_Gem_BP_C::StaticClass()
+                                                                        : SDK::ABP_Harvest_Gem_Base_C::StaticClass());
+
+                if (world->GetName() == "Vera_city") {
+                    // Mirroria gems do not get removed from the world when they are collected.
+                    // Instead they just go invisible and have collision disabled.
+                    nuclei.erase(std::remove_if(nuclei.begin(), nuclei.end(),
+                                                [&](auto *nucleus) -> bool {
+                                                    const auto *gem = static_cast<SDK::AVeraCity_Gem_BP_C *>(nucleus);
+                                                    return gem->Overlap->GetCollisionEnabled() ==
+                                                           SDK::ECollisionEnabled::NoCollision;
+                                                }),
+                                 nuclei.end());
+                }
 
                 if (nuclei.size() > 0) {
                     auto closestNucleus = std::min_element(nuclei.begin(), nuclei.end(), [&](auto *a, auto *b) -> bool {
@@ -25,7 +41,7 @@ namespace Feats {
                     });
 
                     if (closestNucleus != nuclei.end()) {
-                        SDK::ABP_Harvest_Gem_Base_C *closestActor = (SDK::ABP_Harvest_Gem_Base_C *)*closestNucleus;
+                        auto *closestActor = *closestNucleus;
                         auto newPos = closestActor->K2_GetActorLocation();
                         newPos.Z += 500;
                         const auto location =
