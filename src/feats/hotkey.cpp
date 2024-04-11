@@ -107,12 +107,17 @@ namespace Feats {
 
         void menu() {
             ImGui::Text("To set a hotkey, click the button and press the desired key(s) then press ESC to save.");
+            ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.25f);
             ImGui::InputText("Filter", &searchFilter);
+            ImGui::PopItemWidth();
 
             std::string lowerSearchFilter = searchFilter;
             std::transform(searchFilter.begin(), searchFilter.end(), lowerSearchFilter.begin(), tolower);
 
+            ImGui::BeginTable("Hotkey table", 2, ImGuiTableFlags_RowBg);
+
             for (auto &[currentBindingKey, currentImGuiKeys] : bindings) {
+                ImGui::TableNextColumn();
                 std::string lowerBindingKey = currentBindingKey;
                 std::transform(currentBindingKey.begin(), currentBindingKey.end(), lowerBindingKey.begin(), tolower);
 
@@ -148,6 +153,8 @@ namespace Feats {
                         ImGui::PushStyleColor(ImGuiCol_Button, buttonColor);
                     }
 
+                    ImGui::TableNextColumn();
+
                     // Setting ID manually because changes to label value in different ticks
                     // will cause unexpected behavior which leads to incorrect binding key
                     ImGui::PushID(currentBindingKey.c_str());
@@ -172,6 +179,8 @@ namespace Feats {
                     }
                 }
             }
+
+            ImGui::EndTable();
         }
     } // namespace Hotkey
 } // namespace Feats
