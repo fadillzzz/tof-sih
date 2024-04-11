@@ -32,11 +32,11 @@ namespace Config {
         }
     }
 
-    void init() {
+    void init(HMODULE handle) {
         if (directory.empty()) {
             const uint16_t pathSize = 2048;
             wchar_t path[pathSize];
-            GetModuleFileName(nullptr, (LPWSTR)path, sizeof(path));
+            GetModuleFileName((HMODULE)handle, (LPWSTR)path, sizeof(path));
             std::wstring dir = std::wstring(path);
             dir = dir.substr(0, dir.find_last_of(L"\\") + 1);
             setDirectory(dir);

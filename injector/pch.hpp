@@ -8,4 +8,5 @@
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <tchar.h>
 #include <thread>

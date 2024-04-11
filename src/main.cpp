@@ -29,7 +29,7 @@ int MainThread(HINSTANCE hInstDLL) {
     Logger::init();
     Logger::info("Initializing...");
 
-    Config::init();
+    Config::init(hInstDLL);
 
     while (Globals::getInstance() == nullptr) {
         Logger::info("Waiting for game instance...");
