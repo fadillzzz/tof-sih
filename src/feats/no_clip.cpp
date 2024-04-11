@@ -36,12 +36,6 @@ namespace Feats {
                 return;
             }
 
-            if (*enabled) {
-                character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
-            } else {
-                character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
-            }
-
             toggleInNextTick = true;
         }
 
@@ -107,6 +101,10 @@ namespace Feats {
             }
 
             moveVector.Normalize();
+
+            if (character->CharacterMovement->MovementMode == SDK::EMovementMode::MOVE_Falling) {
+                character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
+            }
 
             const auto velocity = character->CharacterMovement->MaxWalkSpeed / 100.0f;
 
