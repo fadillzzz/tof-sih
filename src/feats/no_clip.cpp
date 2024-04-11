@@ -8,6 +8,7 @@ namespace Feats {
     namespace NoClip {
         Config::field<bool> enabled;
         bool toggleInNextTick = false;
+        std::chrono::time_point<std::chrono::system_clock> lastToggle = std::chrono::system_clock::now();
 
         void init() {
             enabled = Config::get<bool>(confEnabled, false);
@@ -45,9 +46,14 @@ namespace Feats {
         }
 
         void tick() {
-            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
+            ImGuiIO &io = ImGui::GetIO();
+            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled) &&
+                std::chrono::system_clock::now() - lastToggle >
+                    std::chrono::milliseconds((int)(io.KeyRepeatDelay * 1000))) {
                 *enabled = !*enabled;
                 toggle();
+                lastToggle = std::chrono::system_clock::now();
+                return;
             }
 
             if (!*enabled) {
