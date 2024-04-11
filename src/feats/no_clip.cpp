@@ -46,6 +46,7 @@ namespace Feats {
 
         void tick() {
             if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
+                *enabled = !*enabled;
                 toggle();
             }
 
