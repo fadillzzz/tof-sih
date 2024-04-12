@@ -43,7 +43,6 @@ namespace Feats {
                     if (closestNucleus != nuclei.end()) {
                         auto *closestActor = *closestNucleus;
                         auto newPos = closestActor->K2_GetActorLocation();
-                        newPos.Z += 500;
                         const auto location =
                             (SDK::FVector *)((byte *)character->CharacterMovement->UpdatedComponent + 0x1E0);
                         *location = newPos;
