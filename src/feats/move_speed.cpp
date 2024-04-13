@@ -38,13 +38,16 @@ namespace Feats {
         }
 
         void menu() {
-            if (*speed <= 0.0f) {
+            if (defaultSpeed <= 0.0f) {
                 const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
-                    *speed = character->PlayMaxWalkSpeed;
-                    defaultSpeed = *speed;
+                    defaultSpeed = character->PlayMaxWalkSpeed;
                 }
+            }
+
+            if (*speed <= 0.0f) {
+                *speed = defaultSpeed;
             }
 
             if (ImGui::Checkbox("Enable Movement Speed", &enabled)) {
