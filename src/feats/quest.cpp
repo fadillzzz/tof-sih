@@ -56,6 +56,8 @@ namespace Feats {
             completeQuestsWithFilter(std::regex("[aA]ctivityquest\\d{3}"));
             // Crew missions
             completeQuestsWithFilter(std::regex("gh\\d{6}"));
+            // Mirroria weekly commissions
+            completeQuestsWithFilter(std::regex("SA\\d{6}"));
         }
 
         void completeAll() {
