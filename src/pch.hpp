@@ -20,4 +20,5 @@
 #define IMGUI_DISABLE_OBSOLETE_KEYIO
 #include "config.hpp"
 #include "imgui.h"
+#include "logger/logger.hpp"
 #include "misc/cpp/imgui_stdlib.h"

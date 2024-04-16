@@ -13,11 +13,11 @@ namespace Feats {
         void applySpeed(float newSpeed) {
             const auto character = Globals::getCharacter();
 
-            if (character != nullptr && !character->IsMountCharacter()) {
-                character->ClientSetMaxWalkSpeed(newSpeed);
-
+            if (character != nullptr) {
                 const auto movement = (SDK::UQRSLCharacterMovementComponent *)character->CharacterMovement;
-                movement->OceanSwimSpeed = newSpeed * 1.5;
+                movement->MaxWalkSpeed = newSpeed;
+
+                movement->OceanSwimSpeed = newSpeed;
                 // The acceleration has to be raised as well or else the actual
                 // velocity will be capped to around 3000 (default * 2 basically)
                 movement->MaxDiveAcceleration = movement->OceanSwimSpeed * 2;
