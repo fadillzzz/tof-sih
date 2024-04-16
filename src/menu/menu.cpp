@@ -22,12 +22,14 @@ namespace Menu {
     }
 
     void postInit() {
-        auto io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
         ImFontConfig fontConfig;
         fontConfig.FontDataOwnedByAtlas = false;
         auto roboto = io.Fonts->AddFontFromMemoryTTF((void *)RobotoRegular, RobotoRegularLen, 48.0f, &fontConfig);
         roboto->Scale /= 3;
         io.FontDefault = roboto;
+        io.KeyRepeatDelay = 0.1f;
+        io.KeyRepeatRate = 0.001f;
     }
 
     void shutdown() {

@@ -10,14 +10,15 @@
 
 #define ASSIGN_BINDINGS(label, key)                                                                                    \
     bindings[label] = Config::get<std::set<ImGuiKey>>(key, {});                                                        \
-    pathToKeys[key] = &bindings[label];
+    pathToKeys[key] = &bindings[label];                                                                                \
+    pathToNextActivation[key] = std::chrono::system_clock::now();
 
 namespace Feats {
     namespace Hotkey {
         std::string searchFilter = "";
         std::map<std::string, Config::field<std::set<ImGuiKey>>> bindings;
         std::map<std::string, std::set<ImGuiKey> *> pathToKeys;
-        std::map<ImGuiKey, std::chrono::time_point<std::chrono::system_clock>> keyLastPressTime;
+        std::map<std::string, std::chrono::time_point<std::chrono::system_clock>> pathToNextActivation;
         std::string bindingKey = "";
 
         void init() {
@@ -33,23 +34,7 @@ namespace Feats {
             ASSIGN_BINDINGS("Toggle ping display", Feats::Ping::confToggleEnabled);
         }
 
-        void tick() {
-            // Don't update the key press time if we're currently binding a key
-            // to prevent accidentally triggering a hotkey.
-            if (bindingKey != "") {
-                return;
-            }
-
-            for (ImGuiKey key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_GamepadStart; key = (ImGuiKey)(key + 1)) {
-                if (key == ImGuiKey_Escape) {
-                    continue;
-                }
-
-                if (ImGui::IsKeyPressed(key)) {
-                    keyLastPressTime[key] = std::chrono::system_clock::now();
-                }
-            }
-        }
+        void tick() { return; }
 
         std::string getKeysString(std::set<ImGuiKey> keys) {
             std::vector<std::string> keyForLabels = {};
@@ -69,42 +54,33 @@ namespace Feats {
         }
 
         bool hotkeyPressed(const std::string &key) {
-            auto pressed = true;
+            // Don't update the key press time if we're currently binding a key
+            // to prevent accidentally triggering a hotkey.
+            if (bindingKey != "") {
+                return false;
+            }
 
             if (!pathToKeys.contains(key)) {
                 return false;
             }
 
-            std::vector<std::chrono::time_point<std::chrono::system_clock>> keyPressTimes = {};
-            for (auto &key : *pathToKeys[key]) {
-                if (!keyLastPressTime.contains(key)) {
-                    return false;
-                }
-
-                keyPressTimes.push_back(keyLastPressTime[key]);
-            }
-
-            if (keyPressTimes.size() == 0) {
+            if (pathToKeys[key]->empty()) {
                 return false;
             }
 
-            const auto minTime = std::min_element(keyPressTimes.begin(), keyPressTimes.end());
-            const auto maxTime = std::max_element(keyPressTimes.begin(), keyPressTimes.end());
-
-            auto io = ImGui::GetIO();
-            auto delay = std::chrono::milliseconds((int)(io.KeyRepeatDelay * 1000));
-
-            if ((*maxTime - *minTime > delay) || (std::chrono::system_clock::now() - *maxTime > delay)) {
-                pressed = false;
+            if (std::chrono::system_clock::now() < pathToNextActivation[key]) {
+                return false;
             }
 
-            if (pressed) {
-                for (auto &key : *pathToKeys[key]) {
-                    keyLastPressTime.erase(key);
+            for (auto &key : *pathToKeys[key]) {
+                if (!ImGui::IsKeyPressed(key)) {
+                    return false;
                 }
             }
 
-            return pressed;
+            pathToNextActivation[key] = std::chrono::system_clock::now() + std::chrono::milliseconds(250);
+
+            return true;
         }
 
         void menu() {
