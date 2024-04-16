@@ -3,7 +3,9 @@
 #include "dx11_impl.hpp"
 #include "dx12_impl.hpp"
 
+#include "../feats/hotkey.hpp"
 #include "../logger/logger.hpp"
+#include "../main.hpp"
 #include "layout/layout.hpp"
 #include "menu.hpp"
 #include "roboto.hpp"
@@ -42,7 +44,7 @@ namespace Menu {
 
     void render() {
         if (initialized) {
-            if (GetAsyncKeyState(VK_INSERT) & 1) {
+            if (Feats::Hotkey::hotkeyPressed(confToggle)) {
                 showMenu = !showMenu;
                 ImGui::GetIO().MouseDrawCursor = showMenu;
             }

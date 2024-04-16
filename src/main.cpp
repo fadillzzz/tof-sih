@@ -57,7 +57,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::Ping);
 
     while (true) {
-        if (GetAsyncKeyState(VK_END) & 1) {
+        if (Feats::Hotkey::hotkeyPressed(confExit)) {
             break;
         }
 

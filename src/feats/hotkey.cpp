@@ -1,5 +1,6 @@
 #include "hotkey.hpp"
 #include "../logger/logger.hpp"
+#include "../main.hpp"
 #include "move_speed.hpp"
 #include "no_clip.hpp"
 #include "ping.hpp"
@@ -8,10 +9,12 @@
 #include "teleport_nucleus.hpp"
 #include "uid_edit.hpp"
 
-#define ASSIGN_BINDINGS(label, key)                                                                                    \
-    bindings[label] = Config::get<std::set<ImGuiKey>>(key, {});                                                        \
+#define ASSIGN_BINDINGS(label, key, def)                                                                               \
+    bindings[label] = Config::get<std::set<ImGuiKey>>(key, def);                                                       \
     pathToKeys[key] = &bindings[label];                                                                                \
     pathToNextActivation[key] = std::chrono::system_clock::now();
+
+#define ASSIGN_BINDINGS_EMPTY_DEFAULT(label, key) ASSIGN_BINDINGS(label, key, {})
 
 namespace Feats {
     namespace Hotkey {
@@ -22,16 +25,18 @@ namespace Feats {
         std::string bindingKey = "";
 
         void init() {
-            ASSIGN_BINDINGS("UID editor", Feats::UidEdit::confToggleEnabled);
-            ASSIGN_BINDINGS("Teleport nucleus", Feats::TeleportNucleus::confActivate);
-            ASSIGN_BINDINGS("Teleport anywhere", Feats::TeleportAnywhere::confActivate);
-            ASSIGN_BINDINGS("Complete main quest(s)", Feats::Quest::confActivateMain);
-            ASSIGN_BINDINGS("Complete Daily", Feats::Quest::confActivateDaily);
-            ASSIGN_BINDINGS("Complete Weekly", Feats::Quest::confActivateWeekly);
-            ASSIGN_BINDINGS("Complete All", Feats::Quest::confActivateAll);
-            ASSIGN_BINDINGS("No clip", Feats::NoClip::confToggleEnabled);
-            ASSIGN_BINDINGS("Movement speed", Feats::MoveSpeed::confToggleEnabled);
-            ASSIGN_BINDINGS("Toggle ping display", Feats::Ping::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("UID editor", Feats::UidEdit::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Teleport nucleus", Feats::TeleportNucleus::confActivate);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Teleport anywhere", Feats::TeleportAnywhere::confActivate);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete main quest(s)", Feats::Quest::confActivateMain);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete Daily", Feats::Quest::confActivateDaily);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete Weekly", Feats::Quest::confActivateWeekly);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete All", Feats::Quest::confActivateAll);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("No clip", Feats::NoClip::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Movement speed", Feats::MoveSpeed::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle ping display", Feats::Ping::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Unload menu", confExit);
+            ASSIGN_BINDINGS("Toggle menu", confToggle, {defaultToggleKey});
         }
 
         void tick() { return; }
