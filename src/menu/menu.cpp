@@ -3,7 +3,9 @@
 #include "dx11_impl.hpp"
 #include "dx12_impl.hpp"
 
+#include "../feats/hotkey.hpp"
 #include "../logger/logger.hpp"
+#include "../main.hpp"
 #include "layout/layout.hpp"
 #include "menu.hpp"
 #include "roboto.hpp"
@@ -22,12 +24,14 @@ namespace Menu {
     }
 
     void postInit() {
-        auto io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
         ImFontConfig fontConfig;
         fontConfig.FontDataOwnedByAtlas = false;
         auto roboto = io.Fonts->AddFontFromMemoryTTF((void *)RobotoRegular, RobotoRegularLen, 48.0f, &fontConfig);
         roboto->Scale /= 3;
         io.FontDefault = roboto;
+        io.KeyRepeatDelay = 0.1f;
+        io.KeyRepeatRate = 0.001f;
     }
 
     void shutdown() {
@@ -40,7 +44,7 @@ namespace Menu {
 
     void render() {
         if (initialized) {
-            if (GetAsyncKeyState(VK_INSERT) & 1) {
+            if (Feats::Hotkey::hotkeyPressed(confToggle)) {
                 showMenu = !showMenu;
                 ImGui::GetIO().MouseDrawCursor = showMenu;
             }

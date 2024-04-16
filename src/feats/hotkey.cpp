@@ -1,5 +1,6 @@
 #include "hotkey.hpp"
 #include "../logger/logger.hpp"
+#include "../main.hpp"
 #include "move_speed.hpp"
 #include "no_clip.hpp"
 #include "ping.hpp"
@@ -8,48 +9,37 @@
 #include "teleport_nucleus.hpp"
 #include "uid_edit.hpp"
 
-#define ASSIGN_BINDINGS(label, key)                                                                                    \
-    bindings[label] = Config::get<std::set<ImGuiKey>>(key, {});                                                        \
-    pathToKeys[key] = &bindings[label];
+#define ASSIGN_BINDINGS(label, key, def)                                                                               \
+    bindings[label] = Config::get<std::set<ImGuiKey>>(key, def);                                                       \
+    pathToKeys[key] = &bindings[label];                                                                                \
+    pathToNextActivation[key] = std::chrono::system_clock::now();
+
+#define ASSIGN_BINDINGS_EMPTY_DEFAULT(label, key) ASSIGN_BINDINGS(label, key, {})
 
 namespace Feats {
     namespace Hotkey {
         std::string searchFilter = "";
         std::map<std::string, Config::field<std::set<ImGuiKey>>> bindings;
         std::map<std::string, std::set<ImGuiKey> *> pathToKeys;
-        std::map<ImGuiKey, std::chrono::time_point<std::chrono::system_clock>> keyLastPressTime;
+        std::map<std::string, std::chrono::time_point<std::chrono::system_clock>> pathToNextActivation;
         std::string bindingKey = "";
 
         void init() {
-            ASSIGN_BINDINGS("UID editor", Feats::UidEdit::confToggleEnabled);
-            ASSIGN_BINDINGS("Teleport nucleus", Feats::TeleportNucleus::confActivate);
-            ASSIGN_BINDINGS("Teleport anywhere", Feats::TeleportAnywhere::confActivate);
-            ASSIGN_BINDINGS("Complete main quest(s)", Feats::Quest::confActivateMain);
-            ASSIGN_BINDINGS("Complete Daily", Feats::Quest::confActivateDaily);
-            ASSIGN_BINDINGS("Complete Weekly", Feats::Quest::confActivateWeekly);
-            ASSIGN_BINDINGS("Complete All", Feats::Quest::confActivateAll);
-            ASSIGN_BINDINGS("No clip", Feats::NoClip::confToggleEnabled);
-            ASSIGN_BINDINGS("Movement speed", Feats::MoveSpeed::confToggleEnabled);
-            ASSIGN_BINDINGS("Toggle ping display", Feats::Ping::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("UID editor", Feats::UidEdit::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Teleport nucleus", Feats::TeleportNucleus::confActivate);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Teleport anywhere", Feats::TeleportAnywhere::confActivate);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete main quest(s)", Feats::Quest::confActivateMain);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete Daily", Feats::Quest::confActivateDaily);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete Weekly", Feats::Quest::confActivateWeekly);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete All", Feats::Quest::confActivateAll);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("No clip", Feats::NoClip::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Movement speed", Feats::MoveSpeed::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle ping display", Feats::Ping::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Unload menu", confExit);
+            ASSIGN_BINDINGS("Toggle menu", confToggle, {defaultToggleKey});
         }
 
-        void tick() {
-            // Don't update the key press time if we're currently binding a key
-            // to prevent accidentally triggering a hotkey.
-            if (bindingKey != "") {
-                return;
-            }
-
-            for (ImGuiKey key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_GamepadStart; key = (ImGuiKey)(key + 1)) {
-                if (key == ImGuiKey_Escape) {
-                    continue;
-                }
-
-                if (ImGui::IsKeyPressed(key)) {
-                    keyLastPressTime[key] = std::chrono::system_clock::now();
-                }
-            }
-        }
+        void tick() { return; }
 
         std::string getKeysString(std::set<ImGuiKey> keys) {
             std::vector<std::string> keyForLabels = {};
@@ -69,42 +59,33 @@ namespace Feats {
         }
 
         bool hotkeyPressed(const std::string &key) {
-            auto pressed = true;
+            // Don't update the key press time if we're currently binding a key
+            // to prevent accidentally triggering a hotkey.
+            if (bindingKey != "") {
+                return false;
+            }
 
             if (!pathToKeys.contains(key)) {
                 return false;
             }
 
-            std::vector<std::chrono::time_point<std::chrono::system_clock>> keyPressTimes = {};
-            for (auto &key : *pathToKeys[key]) {
-                if (!keyLastPressTime.contains(key)) {
-                    return false;
-                }
-
-                keyPressTimes.push_back(keyLastPressTime[key]);
-            }
-
-            if (keyPressTimes.size() == 0) {
+            if (pathToKeys[key]->empty()) {
                 return false;
             }
 
-            const auto minTime = std::min_element(keyPressTimes.begin(), keyPressTimes.end());
-            const auto maxTime = std::max_element(keyPressTimes.begin(), keyPressTimes.end());
-
-            auto io = ImGui::GetIO();
-            auto delay = std::chrono::milliseconds((int)(io.KeyRepeatDelay * 1000));
-
-            if ((*maxTime - *minTime > delay) || (std::chrono::system_clock::now() - *maxTime > delay)) {
-                pressed = false;
+            if (std::chrono::system_clock::now() < pathToNextActivation[key]) {
+                return false;
             }
 
-            if (pressed) {
-                for (auto &key : *pathToKeys[key]) {
-                    keyLastPressTime.erase(key);
+            for (auto &key : *pathToKeys[key]) {
+                if (!ImGui::IsKeyPressed(key)) {
+                    return false;
                 }
             }
 
-            return pressed;
+            pathToNextActivation[key] = std::chrono::system_clock::now() + std::chrono::milliseconds(250);
+
+            return true;
         }
 
         void menu() {
