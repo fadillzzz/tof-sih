@@ -21,6 +21,7 @@ add_library(TOFInternal SHARED
     feats/uid_edit.cpp
     feats/about.cpp
     feats/hotkey.cpp
+    feats/ping.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)

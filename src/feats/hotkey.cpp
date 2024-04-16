@@ -2,6 +2,7 @@
 #include "../logger/logger.hpp"
 #include "move_speed.hpp"
 #include "no_clip.hpp"
+#include "ping.hpp"
 #include "quest.hpp"
 #include "teleport_anywhere.hpp"
 #include "teleport_nucleus.hpp"
@@ -29,6 +30,7 @@ namespace Feats {
             ASSIGN_BINDINGS("Complete All", Feats::Quest::confActivateAll);
             ASSIGN_BINDINGS("No clip", Feats::NoClip::confToggleEnabled);
             ASSIGN_BINDINGS("Movement speed", Feats::MoveSpeed::confToggleEnabled);
+            ASSIGN_BINDINGS("Toggle ping display", Feats::Ping::confToggleEnabled);
         }
 
         void tick() {
