@@ -21,6 +21,10 @@ namespace Feats {
                 // The acceleration has to be raised as well or else the actual
                 // velocity will be capped to around 3000 (default * 2 basically)
                 movement->MaxDiveAcceleration = movement->OceanSwimSpeed * 2;
+
+                // For diving vehicles
+                movement->MaxSwimSpeed = newSpeed;
+                movement->MaxAcceleration = newSpeed;
             }
         }
 
