@@ -3,11 +3,11 @@
 [![](https://dcbadge.vercel.app/api/server/5PGzs9zmVy)](https://discord.gg/5PGzs9zmVy)
 
 > [!Note]
-> Current Built for ToF - Launcher version 3.7.5
+> Latest build available is for version 3.7.5 (official launcher version)
 
 > [!Warning]
-> This is for Educational Perposes Only!
-> - You are held responsible of your own account, If it gets banned by using this its your fault!
+> This is for educational purposes only!
+> **The safety of your account is entirely your responsibility. If it gets banned by using this, it's your own fault! (You have been warned.)**
 
 ## External Library Credits
 - [Dear ImGui](https://github.com/ocornut/imgui)
