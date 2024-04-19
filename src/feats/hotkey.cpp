@@ -6,6 +6,7 @@
 #include "ping.hpp"
 #include "quest.hpp"
 #include "teleport_anywhere.hpp"
+#include "teleport_box.hpp"
 #include "teleport_nucleus.hpp"
 #include "uid_edit.hpp"
 
@@ -36,6 +37,7 @@ namespace Feats {
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Movement speed", Feats::MoveSpeed::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle ping display", Feats::Ping::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Unload menu", confExit);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Teleport to nearby box", Feats::TeleportBox::confActivate);
             ASSIGN_BINDINGS("Toggle menu", confToggle, {defaultToggleKey});
         }
 

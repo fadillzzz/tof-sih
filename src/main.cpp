@@ -11,6 +11,7 @@
 #include "feats/ping.hpp"
 #include "feats/quest.hpp"
 #include "feats/teleport_anywhere.hpp"
+#include "feats/teleport_box.hpp"
 #include "feats/teleport_nucleus.hpp"
 #include "feats/uid_edit.hpp"
 #include "globals.hpp"
@@ -55,6 +56,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::UidEdit);
     REGISTER_FEATURE(Feats::Hotkey);
     REGISTER_FEATURE(Feats::Ping);
+    REGISTER_FEATURE(Feats::TeleportBox);
 
     while (true) {
         if (Feats::Hotkey::hotkeyPressed(confExit)) {

@@ -10,6 +10,7 @@
 #include "../../feats/ping.hpp"
 #include "../../feats/quest.hpp"
 #include "../../feats/teleport_anywhere.hpp"
+#include "../../feats/teleport_box.hpp"
 #include "../../feats/teleport_nucleus.hpp"
 #include "../../feats/uid_edit.hpp"
 
@@ -29,6 +30,7 @@ namespace Menu {
 
             if (ImGui::BeginTabItem("World")) {
                 Feats::TeleportNucleus::menu();
+                Feats::TeleportBox::menu();
                 Feats::TeleportAnywhere::menu();
                 Feats::Quest::menu();
                 ImGui::EndTabItem();
