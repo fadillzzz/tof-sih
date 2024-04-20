@@ -67,7 +67,9 @@ namespace Feats {
                         SDK::FVector extent;
                         closestActor->GetActorBounds(true, &newPos, &extent, false);
                         newPos.Z += extent.Z;
-                        character->ClientTeleportTo(newPos, character->K2_GetActorRotation());
+                        const auto location =
+                            (SDK::FVector *)((byte *)character->CharacterMovement->UpdatedComponent + 0x1E0);
+                        *location = newPos;
                     }
                 }
             }
