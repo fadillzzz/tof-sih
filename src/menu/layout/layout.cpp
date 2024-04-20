@@ -1,6 +1,7 @@
 #include "layout.hpp"
 #include "../../feats/about.hpp"
 #include "../../feats/chain_logging.hpp"
+#include "../../feats/esp.hpp"
 #include "../../feats/fov.hpp"
 #include "../../feats/hotkey.hpp"
 #include "../../feats/inf_jump.hpp"
@@ -35,6 +36,7 @@ namespace Menu {
                 Feats::TeleportBox::menu();
                 Feats::TeleportAnywhere::menu();
                 Feats::Quest::menu();
+                Feats::Esp::menu();
                 ImGui::EndTabItem();
             }
 
