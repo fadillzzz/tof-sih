@@ -17,14 +17,18 @@ namespace Feats {
                 const auto movement = (SDK::UQRSLCharacterMovementComponent *)character->CharacterMovement;
                 movement->MaxWalkSpeed = newSpeed;
 
-                movement->OceanSwimSpeed = newSpeed;
-                // The acceleration has to be raised as well or else the actual
-                // velocity will be capped to around 3000 (default * 2 basically)
-                movement->MaxDiveAcceleration = movement->OceanSwimSpeed * 2;
+                if (character->IsDiving()) {
+                    movement->OceanSwimSpeed = newSpeed;
+                    // The acceleration has to be raised as well or else the actual
+                    // velocity will be capped to around 3000 (default * 2 basically)
+                    movement->MaxDiveAcceleration = movement->OceanSwimSpeed * 2;
+                }
 
-                // For diving vehicles
-                movement->MaxSwimSpeed = newSpeed;
-                movement->MaxAcceleration = newSpeed;
+                if (character->IsA(SDK::AMount_Water_C::StaticClass())) {
+                    // For diving vehicles
+                    movement->MaxSwimSpeed = newSpeed;
+                    movement->MaxAcceleration = newSpeed;
+                }
             }
         }
 
