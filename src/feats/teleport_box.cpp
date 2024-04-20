@@ -15,6 +15,21 @@ namespace Feats {
                 auto boxes =
                     Globals::getAllObjects<SDK::AQRSLTreasureBoxActor *>(SDK::AQRSLTreasureBoxActor::StaticClass());
 
+                const auto world = Globals::getWorld();
+
+                if (world->GetName() == "Vera_city") {
+                    boxes.erase(std::remove_if(boxes.begin(), boxes.end(),
+                                               [](SDK::AQRSLTreasureBoxActor *box) {
+                                                   if (box->CanOpenParticle.WeakPtr.ObjectIndex == UINT_MAX &&
+                                                       box->CanOpenParticle.WeakPtr.ObjectSerialNumber == 0) {
+                                                       return true;
+                                                   }
+
+                                                   return false;
+                                               }),
+                                boxes.end());
+                }
+
                 boxes.erase(std::remove_if(boxes.begin(), boxes.end(),
                                            [](SDK::AQRSLTreasureBoxActor *box) {
                                                if (box->bHarvested == true) {
