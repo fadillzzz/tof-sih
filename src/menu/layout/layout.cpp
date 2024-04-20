@@ -4,6 +4,7 @@
 #include "../../feats/fov.hpp"
 #include "../../feats/hotkey.hpp"
 #include "../../feats/inf_jump.hpp"
+#include "../../feats/jump_height.hpp"
 #include "../../feats/login.hpp"
 #include "../../feats/move_speed.hpp"
 #include "../../feats/no_clip.hpp"
@@ -22,6 +23,7 @@ namespace Menu {
             if (ImGui::BeginTabItem("Player")) {
                 Feats::MoveSpeed::menu();
                 Feats::Fov::menu();
+                Feats::JumpHeight::menu();
                 Feats::InfJump::menu();
                 Feats::NoClip::menu();
                 Feats::UidEdit::menu();

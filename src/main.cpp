@@ -5,6 +5,7 @@
 #include "feats/fov.hpp"
 #include "feats/hotkey.hpp"
 #include "feats/inf_jump.hpp"
+#include "feats/jump_height.hpp"
 #include "feats/login.hpp"
 #include "feats/move_speed.hpp"
 #include "feats/no_clip.hpp"
@@ -57,6 +58,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::Hotkey);
     REGISTER_FEATURE(Feats::Ping);
     REGISTER_FEATURE(Feats::TeleportBox);
+    REGISTER_FEATURE(Feats::JumpHeight);
 
     while (true) {
         if (Feats::Hotkey::hotkeyPressed(confExit)) {

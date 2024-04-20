@@ -23,6 +23,7 @@ add_library(TOFInternal SHARED
     feats/hotkey.cpp
     feats/ping.cpp
     feats/teleport_box.cpp
+    feats/jump_height.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)
