@@ -31,7 +31,7 @@ namespace Feats {
                 }
 
                 boxes.erase(std::remove_if(boxes.begin(), boxes.end(),
-                                           [](SDK::AQRSLTreasureBoxActor *box) {
+                                           [&](SDK::AQRSLTreasureBoxActor *box) {
                                                if (box->bHarvested == true) {
                                                    return true;
                                                }
@@ -40,7 +40,7 @@ namespace Feats {
                                                    return true;
                                                }
 
-                                               if (*includeRespawn == false) {
+                                               if (*includeRespawn == false && world->GetName() != "Vera_city") {
                                                    if (!box->GetName().contains("OnceOnly")) {
                                                        return true;
                                                    }
