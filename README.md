@@ -2,7 +2,14 @@
 
 [![](https://dcbadge.vercel.app/api/server/5PGzs9zmVy)](https://discord.gg/5PGzs9zmVy)
 
-## To do
-- Add a way to save/load config
-- Add a hotkey system
-- Multi-attack
+> [!Note]
+> Latest build available is for version 3.7.5 (official launcher version)
+
+> [!Warning]
+> This is for educational purposes only!
+> **The safety of your account is entirely your responsibility. If it gets banned by using this, it's your own fault! (You have been warned.)**
+
+## External Library Credits
+- [Dear ImGui](https://github.com/ocornut/imgui)
+- [Kiero](https://github.com/Rebzzel/kiero)
+- [MinHook](https://github.com/TsudaKageyu/minhook)

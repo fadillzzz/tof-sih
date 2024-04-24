@@ -1,47 +1,78 @@
 #include "move_speed.hpp"
 #include "../globals.hpp"
+#include "hotkey.hpp"
 
 namespace Feats {
     namespace MoveSpeed {
         float defaultSpeed = 0.0f;
-        float speed = 0.0f;
-        bool enabled = false;
+        double minSpeed = 1.0f;
+        double maxSpeed = 10000.0f;
+        Config::field<double> speed;
+        Config::field<bool> enabled;
 
         void applySpeed(float newSpeed) {
             const auto character = Globals::getCharacter();
 
-            if (character != nullptr && !character->IsMountCharacter()) {
-                character->ClientSetMaxWalkSpeed(newSpeed);
+            if (character != nullptr) {
+                const auto movement = (SDK::UQRSLCharacterMovementComponent *)character->CharacterMovement;
+                movement->MaxWalkSpeed = newSpeed;
+
+                if (character->IsDiving()) {
+                    movement->OceanSwimSpeed = newSpeed;
+                    // The acceleration has to be raised as well or else the actual
+                    // velocity will be capped to around 3000 (default * 2 basically)
+                    movement->MaxDiveAcceleration = movement->OceanSwimSpeed * 2;
+                }
+
+                if (character->IsA(SDK::AMount_Water_C::StaticClass())) {
+                    // For diving vehicles
+                    movement->MaxSwimSpeed = newSpeed;
+                    movement->MaxAcceleration = newSpeed;
+                }
             }
         }
 
         void tick() {
-            if (enabled) {
-                applySpeed(speed);
-            }
-        }
+            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
+                *enabled = !*enabled;
 
-        void init() { return; }
-
-        void menu() {
-            if (speed <= 0.0f) {
-                const auto character = Globals::getCharacter();
-
-                if (character != nullptr) {
-                    speed = character->PlayMaxWalkSpeed;
-                    defaultSpeed = speed;
+                if (!*enabled) {
+                    applySpeed(defaultSpeed);
                 }
             }
 
+            if (*enabled) {
+                applySpeed(*speed);
+            }
+        }
+
+        void init() {
+            speed = Config::get<double>(confSpeed, 0.0f);
+            enabled = Config::get<bool>(confEnabled, false);
+        }
+
+        void menu() {
+            if (defaultSpeed <= 0.0f) {
+                const auto character = Globals::getCharacter();
+
+                if (character != nullptr) {
+                    defaultSpeed = character->PlayMaxWalkSpeed;
+                }
+            }
+
+            if (*speed <= 0.0f) {
+                *speed = defaultSpeed;
+            }
+
             if (ImGui::Checkbox("Enable Movement Speed", &enabled)) {
-                if (!enabled) {
+                if (!*enabled) {
                     applySpeed(defaultSpeed);
                 }
             }
 
             ImGui::Indent();
             ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
-            ImGui::SliderFloat("Movement speed", &speed, 1.0f, 10000.0f);
+            ImGui::SliderScalar("Movement speed", ImGuiDataType_Double, &speed, &minSpeed, &maxSpeed);
             ImGui::PopItemWidth();
             ImGui::Unindent();
         }

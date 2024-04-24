@@ -47,11 +47,11 @@ namespace Hooks {
 
         oProcessEvent(pObject, pFunction, pParams, pResult);
 
-        const auto postResult = runHooks(Type::POST, functionName, pObject, pFunction, pParams);
-        RETURN_IF_STOPPING(postResult, "Post-hooks: Execution for " + functionName + " was stopped");
-
         const auto postWildResult = runHooks(Type::POST, "*", pObject, pFunction, pParams);
         RETURN_IF_STOPPING(postWildResult, "Post-hooks (Wildcard): Execution for " + functionName + " was stopped");
+
+        const auto postResult = runHooks(Type::POST, functionName, pObject, pFunction, pParams);
+        RETURN_IF_STOPPING(postResult, "Post-hooks: Execution for " + functionName + " was stopped");
     }
 
     void init() {

@@ -38,5 +38,7 @@ jobs:
             - name: Archive artifacts
               uses: actions/upload-artifact@v4
               with:
-                  name: TOFInternal.dll
-                  path: build/src/Release/TOFInternal.dll
+                  name: TOFInternal
+                  path: |
+                    build/bin/Release/TOFInternal.dll
+                    build/bin/Release/Injector.exe

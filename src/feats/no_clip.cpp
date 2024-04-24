@@ -2,13 +2,17 @@
 #include "../globals.hpp"
 #include "../hooks.hpp"
 #include "../logger/logger.hpp"
+#include "hotkey.hpp"
 
 namespace Feats {
     namespace NoClip {
-        bool enabled = false;
+        Config::field<bool> enabled;
         bool toggleInNextTick = false;
+        std::chrono::time_point<std::chrono::system_clock> lastToggle = std::chrono::system_clock::now();
 
         void init() {
+            enabled = Config::get<bool>(confEnabled, false);
+
             Hooks::registerHook(
                 "Engine.ActorComponent.ReceiveTick",
                 [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
@@ -16,7 +20,7 @@ namespace Feats {
                         const auto character = Globals::getCharacter();
 
                         if (character != nullptr) {
-                            character->SetActorEnableCollision(!enabled);
+                            character->SetActorEnableCollision(!*enabled);
                             toggleInNextTick = false;
                         }
                     }
@@ -25,8 +29,28 @@ namespace Feats {
                 });
         }
 
+        void toggle() {
+            const auto character = Globals::getCharacter();
+
+            if (character == nullptr) {
+                return;
+            }
+
+            toggleInNextTick = true;
+        }
+
         void tick() {
-            if (!enabled) {
+            ImGuiIO &io = ImGui::GetIO();
+            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled) &&
+                std::chrono::system_clock::now() - lastToggle >
+                    std::chrono::milliseconds((int)(io.KeyRepeatDelay * 1000))) {
+                *enabled = !*enabled;
+                toggle();
+                lastToggle = std::chrono::system_clock::now();
+                return;
+            }
+
+            if (!*enabled) {
                 return;
             }
 
@@ -78,6 +102,10 @@ namespace Feats {
 
             moveVector.Normalize();
 
+            if (character->CharacterMovement->MovementMode == SDK::EMovementMode::MOVE_Falling) {
+                character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
+            }
+
             const auto velocity = character->CharacterMovement->MaxWalkSpeed / 100.0f;
 
             const auto movement = moveVector * velocity;
@@ -96,19 +124,7 @@ namespace Feats {
 
         void menu() {
             if (ImGui::Checkbox("No Clip", &enabled)) {
-                const auto character = Globals::getCharacter();
-
-                if (character == nullptr) {
-                    return;
-                }
-
-                if (enabled) {
-                    character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Falling, 0);
-                } else {
-                    character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
-                }
-
-                toggleInNextTick = true;
+                toggle();
             }
         }
     } // namespace NoClip
