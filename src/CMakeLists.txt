@@ -25,6 +25,10 @@ add_library(TOFInternal SHARED
     feats/teleport_box.cpp
     feats/jump_height.cpp
     feats/esp.cpp
+    feats/esp/box.cpp
+    feats/esp/nucleus.cpp
+    feats/esp/kerosenia.cpp
+    feats/esp/perspective.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)
