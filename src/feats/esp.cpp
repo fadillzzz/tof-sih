@@ -103,7 +103,7 @@ namespace Feats {
                                     std::format(L"{:.2f}m", distance).c_str()));
 
                             SDK::FVector2D distanceLocation = screenLocation;
-                            distanceLocation.Y += font->EmScale;
+                            distanceLocation.Y += font->EmScale / 2;
                             canvas->K2_DrawText(font, distanceString, distanceLocation, SDK::FVector2D(1.f, 1.f),
                                                 SDK::FLinearColor(0, 0, 255, 255), 1.f, SDK::FLinearColor(0, 0, 0, 255),
                                                 SDK::FVector2D(0, 0), true, true, true,
