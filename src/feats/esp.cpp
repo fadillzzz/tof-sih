@@ -2,6 +2,8 @@
 #include "../globals.hpp"
 #include "../hooks.hpp"
 #include "esp/box.hpp"
+#include "esp/chowchow.hpp"
+#include "esp/dandelion.hpp"
 #include "esp/kerosenia.hpp"
 #include "esp/nucleus.hpp"
 #include "esp/perspective.hpp"
@@ -45,6 +47,10 @@ namespace Feats {
                         std::ranges::move(watcher, std::back_inserter(scannedActors));
                         const auto shroom = Shroom::getActors(world);
                         std::ranges::move(shroom, std::back_inserter(scannedActors));
+                        const auto dandelion = Dandelion::getActors(world);
+                        std::ranges::move(dandelion, std::back_inserter(scannedActors));
+                        const auto chowchow = Chowchow::getActors(world);
+                        std::ranges::move(chowchow, std::back_inserter(scannedActors));
                     }
                 } else {
                     const std::lock_guard<std::mutex> lock(actorMutex);
