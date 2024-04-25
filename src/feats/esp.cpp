@@ -32,12 +32,16 @@ namespace Feats {
             while (!shuttingDown) {
                 const auto start = std::chrono::high_resolution_clock::now();
 
+                {
+                    const std::lock_guard<std::mutex> lock(actorMutex);
+                    scannedActors.clear();
+                }
+
                 if (*enabled) {
                     const auto world = Globals::getWorld();
 
                     if (world != nullptr) {
                         const std::lock_guard<std::mutex> lock(actorMutex);
-                        scannedActors.clear();
                         const auto boxes = Box::getActors(world);
                         std::ranges::move(boxes, std::back_inserter(scannedActors));
                         const auto nucleus = Nucleus::getActors(world);
@@ -55,9 +59,6 @@ namespace Feats {
                         const auto chowchow = Chowchow::getActors(world);
                         std::ranges::move(chowchow, std::back_inserter(scannedActors));
                     }
-                } else {
-                    const std::lock_guard<std::mutex> lock(actorMutex);
-                    scannedActors.clear();
                 }
 
                 const auto end = std::chrono::high_resolution_clock::now();
