@@ -9,6 +9,7 @@
 #include "esp/perspective.hpp"
 #include "esp/shroom.hpp"
 #include "esp/watcher.hpp"
+#include "hotkey.hpp"
 #include "minhook/include/MinHook.h"
 #include <format>
 #include <mutex>
@@ -16,7 +17,8 @@
 
 namespace Feats {
     namespace Esp {
-        bool enabled = false;
+        Config::field<bool> enabled;
+        Config::field<size_t> scanDelay;
         bool shuttingDown = false;
         std::mutex actorMutex;
         std::vector<std::shared_ptr<SDK::AActor>> scannedActors;
@@ -30,7 +32,7 @@ namespace Feats {
             while (!shuttingDown) {
                 const auto start = std::chrono::high_resolution_clock::now();
 
-                if (enabled) {
+                if (*enabled) {
                     const auto world = Globals::getWorld();
 
                     if (world != nullptr) {
@@ -60,14 +62,14 @@ namespace Feats {
 
                 const auto end = std::chrono::high_resolution_clock::now();
 
-                if (end - start < std::chrono::milliseconds(500)) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(500) - (end - start));
+                if (end - start < std::chrono::milliseconds(*scanDelay)) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(*scanDelay) - (end - start));
                 }
             }
         }
 
         void hRenderCanvas(SDK::UGameViewportClient *viewport, SDK::UCanvas *canvas) {
-            if (enabled) {
+            if (*enabled) {
                 const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
@@ -114,6 +116,9 @@ namespace Feats {
         }
 
         void init() {
+            enabled = Config::get<bool>(confEnabled, false);
+            scanDelay = Config::get<size_t>(confScanDelay, 1000);
+
             const auto engine = Globals::getEngine();
             const auto viewport = engine->GameViewport;
 
@@ -139,8 +144,18 @@ namespace Feats {
             }
         }
 
-        void tick() { return; }
+        void tick() {
+            if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
+                *enabled = !*enabled;
+            }
+        }
 
-        void menu() { ImGui::Checkbox("ESP", &enabled); }
+        void menu() {
+            ImGui::Checkbox("ESP", &enabled);
+            ImGui::SameLine();
+            ImGui::InputScalar("Scan delay (ms)", ImGuiDataType_U64, &scanDelay);
+            ImGui::Text("Do not use extremely low value for the scan delay. It will cause performance issues and could "
+                        "lead to the game crashing. Recommended value is 1000ms.");
+        }
     } // namespace Esp
 } // namespace Feats
