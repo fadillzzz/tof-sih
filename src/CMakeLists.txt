@@ -29,6 +29,8 @@ add_library(TOFInternal SHARED
     feats/esp/nucleus.cpp
     feats/esp/kerosenia.cpp
     feats/esp/perspective.cpp
+    feats/esp/watcher.cpp
+    feats/esp/shroom.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)

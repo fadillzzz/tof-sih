@@ -5,6 +5,8 @@
 #include "esp/kerosenia.hpp"
 #include "esp/nucleus.hpp"
 #include "esp/perspective.hpp"
+#include "esp/shroom.hpp"
+#include "esp/watcher.hpp"
 #include "minhook/include/MinHook.h"
 #include <mutex>
 #include <ranges>
@@ -39,7 +41,14 @@ namespace Feats {
                         std::ranges::move(kerosenia, std::back_inserter(scannedActors));
                         const auto perspective = Perspective::getActors(world);
                         std::ranges::move(perspective, std::back_inserter(scannedActors));
+                        const auto watcher = Watcher::getActors(world);
+                        std::ranges::move(watcher, std::back_inserter(scannedActors));
+                        const auto shroom = Shroom::getActors(world);
+                        std::ranges::move(shroom, std::back_inserter(scannedActors));
                     }
+                } else {
+                    const std::lock_guard<std::mutex> lock(actorMutex);
+                    scannedActors.clear();
                 }
 
                 const auto end = std::chrono::high_resolution_clock::now();
