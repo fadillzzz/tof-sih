@@ -10,6 +10,7 @@
 #include "esp/shroom.hpp"
 #include "esp/watcher.hpp"
 #include "minhook/include/MinHook.h"
+#include <format>
 #include <mutex>
 #include <ranges>
 
@@ -87,6 +88,21 @@ namespace Feats {
 
                             canvas->K2_DrawText(font, name, screenLocation, SDK::FVector2D(1.f, 1.f),
                                                 SDK::FLinearColor(255, 0, 0, 255), 1.f, SDK::FLinearColor(0, 0, 0, 255),
+                                                SDK::FVector2D(0, 0), true, true, true,
+                                                SDK::FLinearColor(255, 255, 255, 255));
+
+                            const auto distance = character->GetDistanceTo(actor.get()) / 100.f;
+                            // Constructing FString directly from wchar_t * sometimes causes
+                            // garbage text, so we construct FName first then convert it to FString.
+                            // This might be an issue with the UnrealContainers class not zero-ing memory or something.
+                            const auto distanceString = SDK::UKismetStringLibrary::Conv_NameToString(
+                                SDK::UKismetStringLibrary::Conv_StringToName(
+                                    std::format(L"{:.2f}m", distance).c_str()));
+
+                            SDK::FVector2D distanceLocation = screenLocation;
+                            distanceLocation.Y += font->EmScale;
+                            canvas->K2_DrawText(font, distanceString, distanceLocation, SDK::FVector2D(1.f, 1.f),
+                                                SDK::FLinearColor(0, 0, 255, 255), 1.f, SDK::FLinearColor(0, 0, 0, 255),
                                                 SDK::FVector2D(0, 0), true, true, true,
                                                 SDK::FLinearColor(255, 255, 255, 255));
                         }
