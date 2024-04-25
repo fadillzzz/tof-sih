@@ -61,6 +61,12 @@ namespace Feats {
             ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
             ImGui::SliderScalar("Jump height", ImGuiDataType_Double, &height, &minVelocity, &maxVelocity);
             ImGui::PopItemWidth();
+            ImGui::SameLine();
+            ImGui::PushID("reset_jump_height");
+            if (ImGui::Button("Reset")) {
+                *height = defaultVelocity;
+            }
+            ImGui::PopID();
             ImGui::Unindent();
         }
     } // namespace JumpHeight

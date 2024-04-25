@@ -56,7 +56,7 @@ namespace Feats {
                 const auto character = Globals::getCharacter();
 
                 if (character != nullptr) {
-                    defaultSpeed = character->PlayMaxWalkSpeed;
+                    defaultSpeed = character->CharacterMovement->MaxWalkSpeed;
                 }
             }
 
@@ -74,6 +74,12 @@ namespace Feats {
             ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
             ImGui::SliderScalar("Movement speed", ImGuiDataType_Double, &speed, &minSpeed, &maxSpeed);
             ImGui::PopItemWidth();
+            ImGui::SameLine();
+            ImGui::PushID("reset_movement_speed");
+            if (ImGui::Button("Reset")) {
+                *speed = defaultSpeed;
+            }
+            ImGui::PopID();
             ImGui::Unindent();
         }
     } // namespace MoveSpeed

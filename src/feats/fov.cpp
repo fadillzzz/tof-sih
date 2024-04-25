@@ -25,6 +25,14 @@ namespace Feats {
             }
         }
 
-        void menu() { ImGui::SliderScalar("FOV", ImGuiDataType_Double, &fov, &min, &max); }
+        void menu() {
+            ImGui::SliderScalar("FOV", ImGuiDataType_Double, &fov, &min, &max);
+            ImGui::SameLine();
+            ImGui::PushID("reset_fov");
+            if (ImGui::Button("Reset")) {
+                *fov = 75.0f;
+            }
+            ImGui::PopID();
+        }
     } // namespace Fov
 } // namespace Feats
