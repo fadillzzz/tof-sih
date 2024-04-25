@@ -2,6 +2,7 @@
 #include "config.hpp"
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
+#include "feats/esp.hpp"
 #include "feats/fov.hpp"
 #include "feats/hotkey.hpp"
 #include "feats/inf_jump.hpp"
@@ -59,6 +60,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::Ping);
     REGISTER_FEATURE(Feats::TeleportBox);
     REGISTER_FEATURE(Feats::JumpHeight);
+    REGISTER_FEATURE(Feats::Esp);
 
     while (true) {
         if (Feats::Hotkey::hotkeyPressed(confExit)) {
@@ -72,6 +74,7 @@ int MainThread(HINSTANCE hInstDLL) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    Feats::Esp::shutdown();
     Hooks::shutdown();
     Menu::shutdown();
     Config::shutdown();
