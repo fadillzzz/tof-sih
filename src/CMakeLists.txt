@@ -35,6 +35,7 @@ add_library(TOFInternal SHARED
     feats/esp/chowchow.cpp
     feats/esp/sponge.cpp
     feats/esp/particle_fish.cpp
+    feats/esp/fish_baiter.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)

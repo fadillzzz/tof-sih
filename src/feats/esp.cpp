@@ -4,6 +4,7 @@
 #include "esp/box.hpp"
 #include "esp/chowchow.hpp"
 #include "esp/dandelion.hpp"
+#include "esp/fish_baiter.hpp"
 #include "esp/kerosenia.hpp"
 #include "esp/nucleus.hpp"
 #include "esp/particle_fish.hpp"
@@ -58,6 +59,8 @@ namespace Feats {
                         std::ranges::move(sponge, std::back_inserter(scannedActors));
                         const auto particleFish = ParticleFish::getActors(world);
                         std::ranges::move(particleFish, std::back_inserter(scannedActors));
+                        const auto fishBaiter = FishBaiter::getActors(world);
+                        std::ranges::move(fishBaiter, std::back_inserter(scannedActors));
 
                         const std::lock_guard<std::mutex> lock(actorMutex);
                         actorLocations.clear();
