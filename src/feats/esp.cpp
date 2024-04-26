@@ -4,16 +4,16 @@
 #include "esp/box.hpp"
 #include "esp/chowchow.hpp"
 #include "esp/dandelion.hpp"
+#include "esp/fish_baiter.hpp"
 #include "esp/kerosenia.hpp"
 #include "esp/nucleus.hpp"
+#include "esp/particle_fish.hpp"
 #include "esp/perspective.hpp"
 #include "esp/shroom.hpp"
+#include "esp/sponge.hpp"
 #include "esp/watcher.hpp"
 #include "hotkey.hpp"
 #include "minhook/include/MinHook.h"
-#include <format>
-#include <mutex>
-#include <ranges>
 
 namespace Feats {
     namespace Esp {
@@ -55,6 +55,12 @@ namespace Feats {
                         std::ranges::move(dandelion, std::back_inserter(scannedActors));
                         const auto chowchow = Chowchow::getActors(world);
                         std::ranges::move(chowchow, std::back_inserter(scannedActors));
+                        const auto sponge = Sponge::getActors(world);
+                        std::ranges::move(sponge, std::back_inserter(scannedActors));
+                        const auto particleFish = ParticleFish::getActors(world);
+                        std::ranges::move(particleFish, std::back_inserter(scannedActors));
+                        const auto fishBaiter = FishBaiter::getActors(world);
+                        std::ranges::move(fishBaiter, std::back_inserter(scannedActors));
 
                         const std::lock_guard<std::mutex> lock(actorMutex);
                         actorLocations.clear();
