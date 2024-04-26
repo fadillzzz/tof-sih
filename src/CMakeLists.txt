@@ -33,6 +33,8 @@ add_library(TOFInternal SHARED
     feats/esp/shroom.cpp
     feats/esp/dandelion.cpp
     feats/esp/chowchow.cpp
+    feats/esp/sponge.cpp
+    feats/esp/particle_fish.cpp
 )
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)
