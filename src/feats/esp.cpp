@@ -21,7 +21,8 @@ namespace Feats {
         Config::field<size_t> scanDelay;
         bool shuttingDown = false;
         std::mutex actorMutex;
-        std::vector<std::shared_ptr<SDK::AActor>> scannedActors;
+        std::vector<SDK::FVector> actorLocations;
+        std::vector<SDK::FString> actorNames;
 
         typedef void (*RenderCanvas)(SDK::UGameViewportClient *, SDK::UCanvas *);
         RenderCanvas oRenderCanvas = nullptr;
@@ -32,16 +33,12 @@ namespace Feats {
             while (!shuttingDown) {
                 const auto start = std::chrono::high_resolution_clock::now();
 
-                {
-                    const std::lock_guard<std::mutex> lock(actorMutex);
-                    scannedActors.clear();
-                }
-
                 if (*enabled) {
                     const auto world = Globals::getWorld();
 
                     if (world != nullptr) {
-                        const std::lock_guard<std::mutex> lock(actorMutex);
+                        std::vector<std::shared_ptr<SDK::AActor>> scannedActors;
+
                         const auto boxes = Box::getActors(world);
                         std::ranges::move(boxes, std::back_inserter(scannedActors));
                         const auto nucleus = Nucleus::getActors(world);
@@ -58,6 +55,14 @@ namespace Feats {
                         std::ranges::move(dandelion, std::back_inserter(scannedActors));
                         const auto chowchow = Chowchow::getActors(world);
                         std::ranges::move(chowchow, std::back_inserter(scannedActors));
+
+                        const std::lock_guard<std::mutex> lock(actorMutex);
+                        actorLocations.clear();
+                        actorNames.clear();
+                        for (auto &actor : scannedActors) {
+                            actorLocations.push_back(actor->K2_GetActorLocation());
+                            actorNames.push_back(SDK::UKismetStringLibrary::Conv_NameToString(actor->Name));
+                        }
                     }
                 }
 
@@ -75,26 +80,24 @@ namespace Feats {
 
                 if (character != nullptr) {
                     const auto playerController = character->GetHottaPlayerController();
+                    const auto characterLocation = character->K2_GetActorLocation();
                     SDK::FVector2D characterScreenLocation;
 
-                    playerController->ProjectWorldLocationToScreen(character->K2_GetActorLocation(),
-                                                                   &characterScreenLocation, false);
+                    playerController->ProjectWorldLocationToScreen(characterLocation, &characterScreenLocation, false);
+
                     const std::lock_guard<std::mutex> lock(actorMutex);
-                    for (auto &actor : scannedActors) {
+                    for (size_t i = 0; i < actorLocations.size(); i++) {
                         SDK::FVector2D screenLocation;
-                        if (playerController->ProjectWorldLocationToScreen(actor->K2_GetActorLocation(),
-                                                                           &screenLocation, false)) {
+                        if (playerController->ProjectWorldLocationToScreen(actorLocations[i], &screenLocation, false)) {
                             canvas->K2_DrawLine(characterScreenLocation, screenLocation, 1.0f,
                                                 SDK::FLinearColor(255, 0, 0, 255));
 
-                            SDK::FString name = SDK::UKismetStringLibrary::Conv_NameToString(actor->Name);
-
-                            canvas->K2_DrawText(font, name, screenLocation, SDK::FVector2D(1.f, 1.f),
+                            canvas->K2_DrawText(font, actorNames[i], screenLocation, SDK::FVector2D(1.f, 1.f),
                                                 SDK::FLinearColor(255, 0, 0, 255), 1.f, SDK::FLinearColor(0, 0, 0, 255),
                                                 SDK::FVector2D(0, 0), true, true, true,
                                                 SDK::FLinearColor(255, 255, 255, 255));
 
-                            const auto distance = character->GetDistanceTo(actor.get()) / 100.f;
+                            const auto distance = characterLocation.GetDistanceToInMeters(actorLocations[i]);
                             // Constructing FString directly from wchar_t * sometimes causes
                             // garbage text, so we construct FName first then convert it to FString.
                             // This might be an issue with the UnrealContainers class not zero-ing memory or something.
