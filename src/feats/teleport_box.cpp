@@ -66,6 +66,12 @@ namespace Feats {
                         SDK::FVector newPos;
                         SDK::FVector extent;
                         closestActor->GetActorBounds(true, &newPos, &extent, false);
+
+                        if (newPos == SDK::FVector(0, 0, 0)) {
+                            Logger::warning("Box has invalid position. Ignoring...");
+                            return;
+                        }
+
                         newPos.Z += extent.Z;
                         const auto location =
                             (SDK::FVector *)((byte *)character->CharacterMovement->UpdatedComponent + 0x1E0);
