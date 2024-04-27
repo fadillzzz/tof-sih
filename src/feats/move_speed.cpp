@@ -15,6 +15,7 @@ namespace Feats {
 
             if (character != nullptr) {
                 const auto movement = (SDK::UQRSLCharacterMovementComponent *)character->CharacterMovement;
+
                 movement->MaxWalkSpeed = newSpeed;
 
                 if (character->IsDiving()) {
@@ -28,6 +29,15 @@ namespace Feats {
                     // For diving vehicles
                     movement->MaxSwimSpeed = newSpeed;
                     movement->MaxAcceleration = newSpeed;
+                }
+
+                if (character->bIsDriving && character->CurrentPhysVehicle != nullptr) {
+                    // For racing vehicles
+                    const auto vehicle = (SDK::AHottaVehicleBase_C *)character->CurrentPhysVehicle;
+                    vehicle->VehicleMaxLinearSpeed = newSpeed;
+                    vehicle->Gear.EndSpeed = newSpeed;
+                    vehicle->Gear.UpShift = newSpeed;
+                    vehicle->Gear.MaxTorque = newSpeed;
                 }
             }
         }
