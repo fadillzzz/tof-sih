@@ -50,7 +50,13 @@ namespace Globals {
             return nullptr;
         }
 
-        const auto character = (SDK::AQRSLPlayerCharacter *)localPlayer->PlayerController->Character;
+        const auto playerController = (SDK::AQRSLPlayerController *)localPlayer->PlayerController;
+
+        if (playerController->IsA(SDK::AQRSLPlayerController::StaticClass())) {
+            return (SDK::AQRSLPlayerCharacter *)((SDK::AQRSLPlayerController *)playerController)->HottaPlayerOwner;
+        }
+
+        const auto character = (SDK::AQRSLPlayerCharacter *)playerController->Character;
 
         return character;
     }
