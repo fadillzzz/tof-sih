@@ -40,5 +40,5 @@ add_library(TOFInternal SHARED
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)
 add_subdirectory(ext/kiero)
-target_link_libraries(TOFInternal CppSDK ImGui Kiero Config)
+target_link_libraries(TOFInternal CppSDK ImGui Kiero Config DXGI)
 target_include_directories(TOFInternal PRIVATE ../imgui ../kiero ../cfg)
