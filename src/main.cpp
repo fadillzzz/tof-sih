@@ -10,7 +10,6 @@
 #include "feats/login.hpp"
 #include "feats/move_speed.hpp"
 #include "feats/no_clip.hpp"
-#include "feats/ping.hpp"
 #include "feats/quest.hpp"
 #include "feats/teleport_anywhere.hpp"
 #include "feats/teleport_box.hpp"
@@ -57,7 +56,6 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::NoClip);
     REGISTER_FEATURE(Feats::UidEdit);
     REGISTER_FEATURE(Feats::Hotkey);
-    REGISTER_FEATURE(Feats::Ping);
     REGISTER_FEATURE(Feats::TeleportBox);
     REGISTER_FEATURE(Feats::JumpHeight);
     REGISTER_FEATURE(Feats::Esp);

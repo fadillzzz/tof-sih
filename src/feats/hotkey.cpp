@@ -5,7 +5,6 @@
 #include "jump_height.hpp"
 #include "move_speed.hpp"
 #include "no_clip.hpp"
-#include "ping.hpp"
 #include "quest.hpp"
 #include "teleport_anywhere.hpp"
 #include "teleport_box.hpp"
@@ -37,7 +36,6 @@ namespace Feats {
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete All", Feats::Quest::confActivateAll);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("No clip", Feats::NoClip::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Movement speed", Feats::MoveSpeed::confToggleEnabled);
-            ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle ping display", Feats::Ping::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Unload menu", confExit);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Teleport to nearby box", Feats::TeleportBox::confActivate);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle jump height", Feats::JumpHeight::confToggleEnabled);

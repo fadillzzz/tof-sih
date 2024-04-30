@@ -21,7 +21,6 @@ add_library(TOFInternal SHARED
     feats/uid_edit.cpp
     feats/about.cpp
     feats/hotkey.cpp
-    feats/ping.cpp
     feats/teleport_box.cpp
     feats/jump_height.cpp
     feats/esp.cpp
