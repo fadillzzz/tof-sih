@@ -7,6 +7,7 @@
 #include "esp/fish_baiter.hpp"
 #include "esp/kerosenia.hpp"
 #include "esp/nucleus.hpp"
+#include "esp/old_man.hpp"
 #include "esp/particle_fish.hpp"
 #include "esp/perspective.hpp"
 #include "esp/shroom.hpp"
@@ -61,6 +62,8 @@ namespace Feats {
                         std::ranges::move(particleFish, std::back_inserter(scannedActors));
                         const auto fishBaiter = FishBaiter::getActors(world);
                         std::ranges::move(fishBaiter, std::back_inserter(scannedActors));
+                        const auto oldMan = OldMan::getActors(world);
+                        std::ranges::move(oldMan, std::back_inserter(scannedActors));
 
                         const std::lock_guard<std::mutex> lock(actorMutex);
                         actorLocations.clear();
