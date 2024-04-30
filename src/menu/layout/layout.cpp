@@ -9,7 +9,6 @@
 #include "../../feats/login.hpp"
 #include "../../feats/move_speed.hpp"
 #include "../../feats/no_clip.hpp"
-#include "../../feats/ping.hpp"
 #include "../../feats/quest.hpp"
 #include "../../feats/teleport_anywhere.hpp"
 #include "../../feats/teleport_box.hpp"
@@ -77,7 +76,6 @@ namespace Menu {
 
             if (ImGui::BeginTabItem("Misc")) {
                 Feats::Login::menu();
-                Feats::Ping::menu();
                 ImGui::EndTabItem();
             }
 
