@@ -36,7 +36,7 @@ namespace Feats {
                                                    return true;
                                                }
 
-                                               if (*((uint8_t *)box + 0xDB0) == 1) {
+                                               if (*((uint8_t *)box + 0xDC0) == 1) {
                                                    return true;
                                                }
 
