@@ -14,7 +14,22 @@ namespace Feats {
             const auto character = Globals::getCharacter();
 
             if (character != nullptr) {
-                const auto movement = (SDK::UQRSLCharacterMovementComponent *)character->CharacterMovement;
+                SDK::UQRSLCharacterMovementComponent *movement = nullptr;
+
+                movement = (SDK::UQRSLCharacterMovementComponent *)character->CharacterMovement;
+
+                if (character->AttachmentReplication.AttachParent != nullptr) {
+                    if (character->AttachmentReplication.AttachParent->IsA(SDK::AQRSLMountCharacter::StaticClass())) {
+                        const auto mount = (SDK::AQRSLMountCharacter *)character->AttachmentReplication.AttachParent;
+                        movement = (SDK::UQRSLCharacterMovementComponent *)mount->CharacterMovement;
+
+                        if (mount->IsA(SDK::AMount_Water_C::StaticClass())) {
+                            // For diving vehicles
+                            movement->MaxSwimSpeed = newSpeed;
+                            movement->MaxAcceleration = newSpeed;
+                        }
+                    }
+                }
 
                 movement->MaxWalkSpeed = newSpeed;
 
@@ -23,12 +38,6 @@ namespace Feats {
                     // The acceleration has to be raised as well or else the actual
                     // velocity will be capped to around 3000 (default * 2 basically)
                     movement->MaxDiveAcceleration = movement->OceanSwimSpeed * 2;
-                }
-
-                if (character->IsA(SDK::AMount_Water_C::StaticClass())) {
-                    // For diving vehicles
-                    movement->MaxSwimSpeed = newSpeed;
-                    movement->MaxAcceleration = newSpeed;
                 }
 
                 if (character->bIsDriving && character->CurrentPhysVehicle != nullptr) {
