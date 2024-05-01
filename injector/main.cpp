@@ -47,7 +47,7 @@ PWSTR askForLauncherPath() {
     return pszFilePath;
 }
 
-bool startLauncher(const wchar_t *launcherPath) {
+bool startLauncher(wchar_t *launcherPath) {
     STARTUPINFO si;
     si.cb = sizeof(si);
     ZeroMemory(&si, sizeof(si));
@@ -57,7 +57,7 @@ bool startLauncher(const wchar_t *launcherPath) {
     SetEnvironmentVariable(L"__COMPAT_LAYER", L"RUNASINVOKER");
 
     const auto launcherProcessResult =
-        CreateProcess(launcherPath, nullptr, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
+        CreateProcess(nullptr, launcherPath, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
 
     if (!launcherProcessResult) {
         std::cout << "Failed to start the launcher. Exiting..." << std::endl;
@@ -132,7 +132,7 @@ int main() {
 
     auto wideLauncherPath = std::wstring(launcherPath->begin(), launcherPath->end());
 
-    if (!startLauncher(wideLauncherPath.c_str())) {
+    if (!startLauncher(wideLauncherPath.data())) {
         return 1;
     }
 
