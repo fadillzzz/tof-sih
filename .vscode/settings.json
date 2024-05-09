@@ -83,7 +83,8 @@
         "codecvt": "cpp",
         "condition_variable": "cpp",
         "cwctype": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "xstddef": "cpp"
     },
     "cmake.preferredGenerators": [
         "Visual Studio 17 2022"
