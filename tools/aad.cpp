@@ -121,15 +121,13 @@ int main() {
             }
 
             if (QRSL_es) {
-                if (SuspendProtection(handle, procId, QRSL_es)) {
-                    break;
-                }
+                SuspendProtection(handle, procId, QRSL_es);
             }
         } else {
             std::cout << "QRSL.exe not found" << std::endl;
         }
 
-        Sleep(2000);
+        Sleep(100);
     }
 
     return 0;
