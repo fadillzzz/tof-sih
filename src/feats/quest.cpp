@@ -49,6 +49,8 @@ namespace Feats {
             completeQuestsWithFilter(std::regex("rv\\d{6}"));
             // Domain 9 daily bounties
             completeQuestsWithFilter(std::regex("jy\\d{6}"));
+            // Gesthos Network daily bounties
+            completeQuestsWithFilter(std::regex("no\\d{6}"));
         }
 
         void completeWeekly() {
