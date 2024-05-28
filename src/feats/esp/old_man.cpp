@@ -7,7 +7,7 @@ namespace Feats {
                 std::vector<std::shared_ptr<SDK::AActor>> actors;
 
                 SDK::TArray<SDK::AActor *> oldManActors;
-                SDK::UGameplayStatics::GetAllActorsOfClass(world, SDK::ANpcShop_home_C::StaticClass(), &oldManActors);
+                SDK::UGameplayStatics::GetAllActorsOfClass(world, SDK::ANpcShop_home_4_C::StaticClass(), &oldManActors);
 
                 for (const auto &oldManActor : oldManActors) {
                     actors.push_back(std::make_shared<SDK::AActor>(*oldManActor));
