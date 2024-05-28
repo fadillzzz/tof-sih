@@ -28,30 +28,30 @@ DWORD GetProcId(const wchar_t *procName) {
     return procId;
 }
 
-uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t *moduleName) {
+uintptr_t GetModuleBaseAddress(HANDLE handleSnapshot, const wchar_t *moduleName) {
     uintptr_t address = 0;
-
-    HANDLE handleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
 
     if (handleSnapshot != INVALID_HANDLE_VALUE) {
         MODULEENTRY32 moduleEntry;
 
         moduleEntry.dwSize = sizeof(moduleEntry);
 
-        while (Module32Next(handleSnapshot, &moduleEntry)) {
+        if (!Module32First(handleSnapshot, &moduleEntry)) {
+            return address;
+        }
+
+        do {
             if (_wcsicmp(moduleEntry.szModule, moduleName) == 0) {
                 address = (uintptr_t)moduleEntry.modBaseAddr;
                 break;
             }
-        }
+        } while (Module32Next(handleSnapshot, &moduleEntry));
     }
-
-    CloseHandle(handleSnapshot);
 
     return address;
 }
 
-bool SuspendProtection(HANDLE hProcess, DWORD pid, uintptr_t protAddr) {
+bool SuspendProtection(HANDLE hProcess, DWORD pid, uintptr_t protAddr, HANDLE ntdllHandle) {
     THREADENTRY32 te32{};
     HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
     te32.dwSize = sizeof(te32);
@@ -59,7 +59,6 @@ bool SuspendProtection(HANDLE hProcess, DWORD pid, uintptr_t protAddr) {
         if (te32.th32OwnerProcessID == pid) {
             PVOID threadInfo;
             ULONG retLen;
-            const auto ntdllHandle = GetModuleBaseAddress(pid, L"ntdll.dll");
             auto NtQueryInformationThread =
                 (NtQueryInformationThread_t)GetProcAddress((HMODULE)ntdllHandle, "NtQueryInformationThread");
             if (NtQueryInformationThread == nullptr)
@@ -73,7 +72,7 @@ bool SuspendProtection(HANDLE hProcess, DWORD pid, uintptr_t protAddr) {
             if (VirtualQueryEx(hProcess, (LPCVOID)threadInfo, &mbi, sizeof(mbi))) {
                 auto baseAddress = reinterpret_cast<uintptr_t>(mbi.AllocationBase);
                 if (baseAddress == protAddr) {
-                    std::cout << "Suspending QRSL_es.dll thread" << std::endl;
+                    std::cout << "Suspending protection thread" << std::endl;
                     SuspendThread(hThread);
                     CloseHandle(hThread);
                     return true;
@@ -95,8 +94,11 @@ int main() {
 
         if (procId) {
             const auto handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, procId);
-            const auto QRSL_es = GetModuleBaseAddress(procId, L"QRSL_es.dll");
-            const auto ntdllHandle = GetModuleBaseAddress(procId, L"ntdll.dll");
+            const auto moduleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
+            const auto QRSL_es = GetModuleBaseAddress(moduleSnapshot, L"QRSL_es.dll");
+            const auto ntdllHandle = GetModuleBaseAddress(moduleSnapshot, L"ntdll.dll");
+            const auto gmesdk = GetModuleBaseAddress(moduleSnapshot, L"gmesdk.dll");
+            CloseHandle(moduleSnapshot);
 
             if (ntdllHandle) {
                 for (size_t i = 0; i < names.size(); i++) {
@@ -121,13 +123,15 @@ int main() {
             }
 
             if (QRSL_es) {
-                SuspendProtection(handle, procId, QRSL_es);
+                SuspendProtection(handle, procId, QRSL_es, (HANDLE)ntdllHandle);
+            }
+
+            if (gmesdk) {
+                SuspendProtection(handle, procId, gmesdk, (HANDLE)ntdllHandle);
             }
         } else {
             std::cout << "QRSL.exe not found" << std::endl;
         }
-
-        Sleep(100);
     }
 
     return 0;
