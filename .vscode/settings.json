@@ -67,7 +67,24 @@
         "xutility": "cpp",
         "mutex": "cpp",
         "variant": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "any": "cpp",
+        "array": "cpp",
+        "coroutine": "cpp",
+        "filesystem": "cpp",
+        "fstream": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "ranges": "cpp",
+        "set": "cpp",
+        "span": "cpp",
+        "unordered_set": "cpp",
+        "valarray": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "cwctype": "cpp",
+        "future": "cpp",
+        "xstddef": "cpp"
     },
     "cmake.preferredGenerators": [
         "Visual Studio 17 2022"
