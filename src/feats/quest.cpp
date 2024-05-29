@@ -44,6 +44,11 @@ namespace Feats {
             }
         }
 
+        void completeCrewMissions() {
+            // Crew missions
+            completeQuestsWithFilter(std::regex("gh\\d{6}"));
+        }
+
         void completeDaily() {
             // Aesperia daily bounties
             completeQuestsWithFilter(std::regex("q\\d{6}"));
@@ -58,8 +63,6 @@ namespace Feats {
         void completeWeekly() {
             // Weekly activities
             completeQuestsWithFilter(std::regex("[aA]ctivityquest\\d{3}"));
-            // Crew missions
-            completeQuestsWithFilter(std::regex("gh\\d{6}"));
             // Mirroria weekly commissions
             completeQuestsWithFilter(std::regex("SA\\d{6}"));
         }
@@ -120,6 +123,10 @@ namespace Feats {
 
             if (ImGui::Button("Complete Weekly")) {
                 completeWeekly();
+            }
+
+            if (ImGui::Button("Complete crew missions")) {
+                completeCrewMissions();
             }
 
             if (ImGui::Button("Complete all quests")) {
