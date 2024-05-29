@@ -6,6 +6,8 @@
 
 namespace Feats {
     namespace Quest {
+        Config::field<bool> allExceptMainEnabled;
+
         void completeQuestsWithFilter(std::regex filter) {
             const auto character = Globals::getCharacter();
 
@@ -24,7 +26,7 @@ namespace Feats {
             }
         }
 
-        void init() { return; }
+        void init() { allExceptMainEnabled = Config::get<bool>(confActivateAllExceptMainEnabled, true); }
 
         void completeMain() {
             const auto character = Globals::getCharacter();
@@ -62,7 +64,7 @@ namespace Feats {
             completeQuestsWithFilter(std::regex("SA\\d{6}"));
         }
 
-        void completeAll() {
+        void completeAll(bool excludeMain) {
             const auto character = Globals::getCharacter();
 
             if (character != nullptr) {
@@ -70,8 +72,19 @@ namespace Feats {
 
                 if (questComponent != nullptr) {
                     const auto quests = questComponent->QuestsInProgress;
+                    const auto mainQuests = questComponent->GetCurMainQuest();
+                    std::vector<std::string> mainQuestIds = {};
+
+                    for (auto mainQuest : mainQuests) {
+                        mainQuestIds.push_back(mainQuest.ToString());
+                    }
 
                     for (auto &quest : quests) {
+                        if (excludeMain && std::find(mainQuestIds.begin(), mainQuestIds.end(),
+                                                     quest.QuestID.ToString()) != mainQuestIds.end()) {
+                            continue;
+                        }
+
                         questComponent->GM_CompleteQuestObject(quest.QuestID);
                     }
                 }
@@ -92,7 +105,7 @@ namespace Feats {
             }
 
             if (Feats::Hotkey::hotkeyPressed(confActivateAll)) {
-                completeAll();
+                completeAll(*allExceptMainEnabled);
             }
         }
 
@@ -101,23 +114,21 @@ namespace Feats {
                 completeMain();
             }
 
-            ImGui::SameLine();
-
             if (ImGui::Button("Complete Daily")) {
                 completeDaily();
             }
-
-            ImGui::SameLine();
 
             if (ImGui::Button("Complete Weekly")) {
                 completeWeekly();
             }
 
+            if (ImGui::Button("Complete all quests")) {
+                completeAll(*allExceptMainEnabled);
+            }
+
             ImGui::SameLine();
 
-            if (ImGui::Button("Complete all quests")) {
-                completeAll();
-            }
+            ImGui::Checkbox("Exclude main quest(s)", &allExceptMainEnabled);
         }
     } // namespace Quest
 } // namespace Feats
