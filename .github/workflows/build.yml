@@ -10,8 +10,10 @@ on:
 
 jobs:
     build:
+        strategy:
+            matrix:
+                game_version: ['official', 'steam']
         runs-on: windows-latest
-
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -29,6 +31,10 @@ jobs:
 
             - uses: lukka/get-cmake@latest
 
+            - if: ${{ matrix.game_version == 'steam' }}
+              name: Flag for Steam build
+              run: export CXXFLAGS="-DIS_STEAM_VERSION=1"
+
             - name: Configure CMake
               run: cmake -B build -S .
 
@@ -38,7 +44,7 @@ jobs:
             - name: Archive artifacts
               uses: actions/upload-artifact@v4
               with:
-                  name: TOFInternal
+                  name: TOFInternal-${{ matrix.game_version }}
                   path: |
                     build/bin/Release/TOFInternal.dll
                     build/bin/Release/Injector.exe
