@@ -33,7 +33,7 @@ jobs:
 
             - if: ${{ matrix.game_version == 'steam' }}
               name: Flag for Steam build
-              run: export CXXFLAGS="-DIS_STEAM_VERSION=1"
+              run: echo 'CXXFLAGS="-DIS_STEAM_VERSION=1"' >> $GITHUB_ENV
 
             - name: Configure CMake
               run: cmake -B build -S .
