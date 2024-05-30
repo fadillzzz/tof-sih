@@ -31,12 +31,8 @@ jobs:
 
             - uses: lukka/get-cmake@latest
 
-            - if: ${{ matrix.game_version == 'steam' }}
-              name: Flag for Steam build
-              run: echo 'CXXFLAGS="-DIS_STEAM_VERSION=1"' >> $GITHUB_ENV
-
             - name: Configure CMake
-              run: cmake -B build -S .
+              run: cmake -B build -S . -DBUILD_STEAM_VERSION=${{ matrix.game_version == 'steam' && 'ON' || 'OFF' }}
 
             - name: Build project
               run: cmake --build build --config Release
