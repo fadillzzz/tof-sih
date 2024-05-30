@@ -3,7 +3,7 @@
 [![](https://dcbadge.vercel.app/api/server/5PGzs9zmVy)](https://discord.gg/5PGzs9zmVy)
 
 > [!Note]
-> Latest build available is for version 4.0.0 (official launcher version)
+> Latest build available is for version 4.0.0 (official launcher & Steam versions)
 
 > [!Warning]
 > This is for educational purposes only!
