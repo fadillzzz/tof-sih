@@ -137,6 +137,14 @@ namespace Feats {
             if (Feats::Hotkey::hotkeyPressed(confActivateAll)) {
                 completeAll(*allExceptMainEnabled);
             }
+
+            if (Feats::Hotkey::hotkeyPressed(confActivateCrewMissions)) {
+                completeCrewMissions();
+            }
+
+            if (Feats::Hotkey::hotkeyPressed(confActivateMentorship)) {
+                completeMentorshipQuests();
+            }
         }
 
         void menu() {

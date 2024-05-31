@@ -4,6 +4,8 @@ namespace Feats {
         const std::string confActivateMain = confPrefix + "/activateMain";
         const std::string confActivateDaily = confPrefix + "/activateDaily";
         const std::string confActivateWeekly = confPrefix + "/activateWeekly";
+        const std::string confActivateCrewMissions = confPrefix + "/activateCrewMissions";
+        const std::string confActivateMentorship = confPrefix + "/activateMentorship";
         const std::string confActivateAll = confPrefix + "/activateAll";
         const std::string confActivateAllExceptMainEnabled = confPrefix + "/activateAllExceptMainEnabled";
 
