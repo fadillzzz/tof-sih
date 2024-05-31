@@ -88,6 +88,10 @@ namespace Feats {
                             continue;
                         }
 
+                        if (excludeMain && quest.QuestID.ToString().find("v104059") != std::string::npos) {
+                            continue;
+                        }
+
                         questComponent->GM_CompleteQuestObject(quest.QuestID);
                     }
                 }
