@@ -98,6 +98,24 @@ namespace Feats {
             }
         }
 
+        void submitAllPending() {
+            const auto character = Globals::getCharacter();
+
+            if (character != nullptr) {
+                const auto questComponent = character->QuestComponent;
+
+                if (questComponent != nullptr) {
+                    const auto pendingQuests = questComponent->QuestsInProgress;
+
+                    for (auto &quest : pendingQuests) {
+                        if (quest.QuestStatus == SDK::EQRSLQuestStatus::EQS_CAN_SUBMIT) {
+                            questComponent->SubmitQuest(quest.QuestID);
+                        }
+                    }
+                }
+            }
+        }
+
         void tick() {
             if (Feats::Hotkey::hotkeyPressed(confActivateMain)) {
                 completeMain();
@@ -135,6 +153,10 @@ namespace Feats {
 
             if (ImGui::Button("Complete all quests")) {
                 completeAll(*allExceptMainEnabled);
+            }
+
+            if (ImGui::Button("Submit pending completed quests")) {
+                submitAllPending();
             }
 
             ImGui::SameLine();
