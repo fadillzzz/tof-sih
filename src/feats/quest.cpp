@@ -67,6 +67,11 @@ namespace Feats {
             completeQuestsWithFilter(std::regex("SA\\d{6}"));
         }
 
+        void completeMentorshipQuests() {
+            // Mentorship quests
+            completeQuestsWithFilter(std::regex("MentorShipquest\\d{3}"));
+        }
+
         void completeAll(bool excludeMain) {
             const auto character = Globals::getCharacter();
 
@@ -151,17 +156,21 @@ namespace Feats {
                 completeCrewMissions();
             }
 
-            if (ImGui::Button("Complete all quests")) {
-                completeAll(*allExceptMainEnabled);
+            if (ImGui::Button("Complete mentorship quests")) {
+                completeMentorshipQuests();
             }
 
-            if (ImGui::Button("Submit pending completed quests")) {
-                submitAllPending();
+            if (ImGui::Button("Complete all quests")) {
+                completeAll(*allExceptMainEnabled);
             }
 
             ImGui::SameLine();
 
             ImGui::Checkbox("Exclude main quest(s)", &allExceptMainEnabled);
+
+            if (ImGui::Button("Submit pending completed quests")) {
+                submitAllPending();
+            }
         }
     } // namespace Quest
 } // namespace Feats
