@@ -10,6 +10,7 @@
 #include "../../feats/move_speed.hpp"
 #include "../../feats/no_clip.hpp"
 #include "../../feats/quest.hpp"
+#include "../../feats/rapid_attack.hpp"
 #include "../../feats/teleport_anywhere.hpp"
 #include "../../feats/teleport_box.hpp"
 #include "../../feats/teleport_nucleus.hpp"
@@ -41,7 +42,7 @@ namespace Menu {
         void render() {
             ImGui::BeginTabBar("Menu");
 
-            std::array<const char *, 2> playerOptions = {"Movement", "Visual"};
+            std::array<const char *, 3> playerOptions = {"Movement", "Visual", "Attack"};
             tabContent("Player", playerOptions, &selectedPlayerOption, []() {
                 switch (selectedPlayerOption) {
                 case 0:
@@ -53,6 +54,8 @@ namespace Menu {
                 case 1:
                     Feats::Fov::menu();
                     Feats::UidEdit::menu();
+                case 2:
+                    Feats::RapidAttack::menu();
                     break;
                 }
             });

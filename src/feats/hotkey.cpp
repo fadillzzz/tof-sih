@@ -6,6 +6,7 @@
 #include "move_speed.hpp"
 #include "no_clip.hpp"
 #include "quest.hpp"
+#include "rapid_attack.hpp"
 #include "teleport_anywhere.hpp"
 #include "teleport_box.hpp"
 #include "teleport_nucleus.hpp"
@@ -42,6 +43,7 @@ namespace Feats {
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Teleport to nearby box", Feats::TeleportBox::confActivate);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle jump height", Feats::JumpHeight::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle ESP", Feats::Esp::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Rapid attack", Feats::RapidAttack::confToggleEnabled);
             ASSIGN_BINDINGS("Toggle menu", confToggle, {defaultToggleKey});
         }
 
