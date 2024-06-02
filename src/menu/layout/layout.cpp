@@ -4,6 +4,7 @@
 #include "../../feats/esp.hpp"
 #include "../../feats/fov.hpp"
 #include "../../feats/hotkey.hpp"
+#include "../../feats/inf_dodge.hpp"
 #include "../../feats/inf_jump.hpp"
 #include "../../feats/jump_height.hpp"
 #include "../../feats/login.hpp"
@@ -42,7 +43,7 @@ namespace Menu {
         void render() {
             ImGui::BeginTabBar("Menu");
 
-            std::array<const char *, 3> playerOptions = {"Movement", "Visual", "Attack"};
+            std::array<const char *, 3> playerOptions = {"Movement", "Visual", "Combat"};
             tabContent("Player", playerOptions, &selectedPlayerOption, []() {
                 switch (selectedPlayerOption) {
                 case 0:
@@ -56,6 +57,7 @@ namespace Menu {
                     Feats::UidEdit::menu();
                 case 2:
                     Feats::RapidAttack::menu();
+                    Feats::InfDodge::menu();
                     break;
                 }
             });
