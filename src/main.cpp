@@ -55,7 +55,6 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::TeleportAnywhere);
     REGISTER_FEATURE(Feats::ChainLogging);
     REGISTER_FEATURE(Feats::NoClip);
-    REGISTER_FEATURE(Feats::RapidAttack);
     REGISTER_FEATURE(Feats::UidEdit);
     REGISTER_FEATURE(Feats::Hotkey);
     REGISTER_FEATURE(Feats::TeleportBox);
