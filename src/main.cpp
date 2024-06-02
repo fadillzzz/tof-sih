@@ -5,6 +5,7 @@
 #include "feats/esp.hpp"
 #include "feats/fov.hpp"
 #include "feats/hotkey.hpp"
+#include "feats/inf_dodge.hpp"
 #include "feats/inf_jump.hpp"
 #include "feats/jump_height.hpp"
 #include "feats/login.hpp"
@@ -61,6 +62,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::JumpHeight);
     REGISTER_FEATURE(Feats::Esp);
     REGISTER_FEATURE(Feats::RapidAttack);
+    REGISTER_FEATURE(Feats::InfDodge);
 
     while (true) {
         if (Feats::Hotkey::hotkeyPressed(confExit)) {

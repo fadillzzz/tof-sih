@@ -24,6 +24,7 @@ add_library(TOFInternal SHARED
     feats/hotkey.cpp
     feats/teleport_box.cpp
     feats/jump_height.cpp
+    feats/inf_dodge.cpp
     feats/esp.cpp
     feats/esp/box.cpp
     feats/esp/nucleus.cpp
