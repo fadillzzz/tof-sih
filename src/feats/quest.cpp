@@ -67,6 +67,11 @@ namespace Feats {
             completeQuestsWithFilter(std::regex("SA\\d{6}"));
         }
 
+        void completeMentorshipQuests() {
+            // Mentorship quests
+            completeQuestsWithFilter(std::regex("MentorShipquest\\d{3}"));
+        }
+
         void completeAll(bool excludeMain) {
             const auto character = Globals::getCharacter();
 
@@ -88,7 +93,29 @@ namespace Feats {
                             continue;
                         }
 
+                        if (excludeMain && quest.QuestID.ToString().find("v104059") != std::string::npos) {
+                            continue;
+                        }
+
                         questComponent->GM_CompleteQuestObject(quest.QuestID);
+                    }
+                }
+            }
+        }
+
+        void submitAllPending() {
+            const auto character = Globals::getCharacter();
+
+            if (character != nullptr) {
+                const auto questComponent = character->QuestComponent;
+
+                if (questComponent != nullptr) {
+                    const auto pendingQuests = questComponent->QuestsInProgress;
+
+                    for (auto &quest : pendingQuests) {
+                        if (quest.QuestStatus == SDK::EQRSLQuestStatus::EQS_CAN_SUBMIT) {
+                            questComponent->SubmitQuest(quest.QuestID);
+                        }
                     }
                 }
             }
@@ -110,6 +137,14 @@ namespace Feats {
             if (Feats::Hotkey::hotkeyPressed(confActivateAll)) {
                 completeAll(*allExceptMainEnabled);
             }
+
+            if (Feats::Hotkey::hotkeyPressed(confActivateCrewMissions)) {
+                completeCrewMissions();
+            }
+
+            if (Feats::Hotkey::hotkeyPressed(confActivateMentorship)) {
+                completeMentorshipQuests();
+            }
         }
 
         void menu() {
@@ -129,6 +164,10 @@ namespace Feats {
                 completeCrewMissions();
             }
 
+            if (ImGui::Button("Complete mentorship quests")) {
+                completeMentorshipQuests();
+            }
+
             if (ImGui::Button("Complete all quests")) {
                 completeAll(*allExceptMainEnabled);
             }
@@ -136,6 +175,10 @@ namespace Feats {
             ImGui::SameLine();
 
             ImGui::Checkbox("Exclude main quest(s)", &allExceptMainEnabled);
+
+            if (ImGui::Button("Submit pending completed quests")) {
+                submitAllPending();
+            }
         }
     } // namespace Quest
 } // namespace Feats

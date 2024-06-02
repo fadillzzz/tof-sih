@@ -12,6 +12,11 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 endif()
 add_definitions(-DUNICODE -D_UNICODE)
 
+option(BUILD_STEAM_VERSION "Create a build for the Steam version" OFF)
+if (BUILD_STEAM_VERSION)
+    add_definitions(-DIS_STEAM_VERSION)
+endif()
+
 include(FetchContent)
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
 FetchContent_MakeAvailable(json)

@@ -33,6 +33,8 @@ namespace Feats {
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete main quest(s)", Feats::Quest::confActivateMain);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete Daily", Feats::Quest::confActivateDaily);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete Weekly", Feats::Quest::confActivateWeekly);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete crew missions", Feats::Quest::confActivateCrewMissions);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete mentorship quests", Feats::Quest::confActivateMentorship);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Complete All", Feats::Quest::confActivateAll);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("No clip", Feats::NoClip::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Movement speed", Feats::MoveSpeed::confToggleEnabled);
