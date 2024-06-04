@@ -170,7 +170,6 @@ void undoProtection(HANDLE handle) {
         QRSL_es = GetModuleBaseAddress(moduleSnapshot, L"QRSL_es.dll");
         ntdllHandle = GetModuleBaseAddress(moduleSnapshot, L"ntdll.dll");
         CloseHandle(moduleSnapshot);
-        std::this_thread::sleep_for(std::chrono::seconds(2));
     } while (!QRSL_es || !ntdllHandle);
 
     std::cout << std::hex;
