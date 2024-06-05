@@ -1,11 +1,27 @@
 #include "inf_dodge.hpp"
+#include "../hooks.hpp"
 #include "../memory_manager.hpp"
+#include "ability_failure.hpp"
 #include "hotkey.hpp"
 
 namespace Feats {
     namespace InfDodge {
         Config::field<bool> enabled;
         uint8_t *infiniteDodgeAddr;
+
+        void toggleEnabled(bool isEnabled) {
+            if (isEnabled) {
+                infiniteDodgeAddr[0] = 0x90;
+                infiniteDodgeAddr[1] = 0x90;
+
+                AbilityFailure::enableAndLock();
+            } else {
+                infiniteDodgeAddr[0] = 0x2B;
+                infiniteDodgeAddr[1] = 0x11;
+
+                AbilityFailure::unlock();
+            }
+        }
 
         void init() {
             enabled = Config::get<bool>("/feats/infiniteDodge/enabled", false);
@@ -22,15 +38,9 @@ namespace Feats {
             DWORD oldProtect;
             infiniteDodgeAddr = (uint8_t *)result[0];
             VirtualProtect(infiniteDodgeAddr, 2, PAGE_EXECUTE_READWRITE, &oldProtect);
-        }
 
-        void toggleEnabled(bool isEnabled) {
-            if (isEnabled) {
-                infiniteDodgeAddr[0] = 0x90;
-                infiniteDodgeAddr[1] = 0x90;
-            } else {
-                infiniteDodgeAddr[0] = 0x2B;
-                infiniteDodgeAddr[1] = 0x11;
+            if (*enabled) {
+                toggleEnabled(*enabled);
             }
         }
 
