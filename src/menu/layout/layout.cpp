@@ -1,4 +1,5 @@
 #include "layout.hpp"
+#include "../../feats/ability_failure.hpp"
 #include "../../feats/about.hpp"
 #include "../../feats/chain_logging.hpp"
 #include "../../feats/esp.hpp"
@@ -58,6 +59,7 @@ namespace Menu {
                 case 2:
                     Feats::RapidAttack::menu();
                     Feats::InfDodge::menu();
+                    Feats::AbilityFailure::menu();
                     break;
                 }
             });

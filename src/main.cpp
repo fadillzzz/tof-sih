@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include "config.hpp"
+#include "feats/ability_failure.hpp"
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
 #include "feats/esp.hpp"
@@ -62,6 +63,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::JumpHeight);
     REGISTER_FEATURE(Feats::Esp);
     REGISTER_FEATURE(Feats::RapidAttack);
+    REGISTER_FEATURE(Feats::AbilityFailure);
     REGISTER_FEATURE(Feats::InfDodge);
 
     while (true) {
