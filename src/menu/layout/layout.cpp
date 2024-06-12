@@ -2,6 +2,7 @@
 #include "../../feats/ability_failure.hpp"
 #include "../../feats/about.hpp"
 #include "../../feats/chain_logging.hpp"
+#include "../../feats/chest_resizer.hpp"
 #include "../../feats/esp.hpp"
 #include "../../feats/fov.hpp"
 #include "../../feats/hotkey.hpp"
@@ -58,6 +59,7 @@ namespace Menu {
                     Feats::Fov::menu();
                     Feats::UidEdit::menu();
                     Feats::NoTransparency::menu();
+                    Feats::ChestResizer::menu();
                     break;
                 case 2:
                     Feats::RapidAttack::menu();
