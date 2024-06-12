@@ -11,6 +11,7 @@
 #include "../../feats/login.hpp"
 #include "../../feats/move_speed.hpp"
 #include "../../feats/no_clip.hpp"
+#include "../../feats/no_transparency.hpp"
 #include "../../feats/quest.hpp"
 #include "../../feats/rapid_attack.hpp"
 #include "../../feats/teleport_anywhere.hpp"
@@ -56,6 +57,8 @@ namespace Menu {
                 case 1:
                     Feats::Fov::menu();
                     Feats::UidEdit::menu();
+                    Feats::NoTransparency::menu();
+                    break;
                 case 2:
                     Feats::RapidAttack::menu();
                     Feats::InfDodge::menu();

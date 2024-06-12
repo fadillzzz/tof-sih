@@ -12,6 +12,7 @@
 #include "feats/login.hpp"
 #include "feats/move_speed.hpp"
 #include "feats/no_clip.hpp"
+#include "feats/no_transparency.hpp"
 #include "feats/quest.hpp"
 #include "feats/rapid_attack.hpp"
 #include "feats/teleport_anywhere.hpp"
@@ -63,6 +64,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::JumpHeight);
     REGISTER_FEATURE(Feats::Esp);
     REGISTER_FEATURE(Feats::RapidAttack);
+    REGISTER_FEATURE(Feats::NoTransparency);
     REGISTER_FEATURE(Feats::AbilityFailure);
     REGISTER_FEATURE(Feats::InfDodge);
 

@@ -6,6 +6,7 @@
 #include "jump_height.hpp"
 #include "move_speed.hpp"
 #include "no_clip.hpp"
+#include "no_transparency.hpp"
 #include "quest.hpp"
 #include "rapid_attack.hpp"
 #include "teleport_anywhere.hpp"
@@ -46,6 +47,7 @@ namespace Feats {
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Toggle ESP", Feats::Esp::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Rapid attack", Feats::RapidAttack::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Infinite dodge", Feats::InfDodge::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("No transparency", Feats::NoTransparency::confToggleEnabled);
             ASSIGN_BINDINGS("Toggle menu", confToggle, {defaultToggleKey});
         }
 
