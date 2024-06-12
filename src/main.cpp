@@ -3,6 +3,7 @@
 #include "feats/ability_failure.hpp"
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
+#include "feats/chest_resizer.hpp"
 #include "feats/esp.hpp"
 #include "feats/fov.hpp"
 #include "feats/hotkey.hpp"
@@ -65,6 +66,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::Esp);
     REGISTER_FEATURE(Feats::RapidAttack);
     REGISTER_FEATURE(Feats::NoTransparency);
+    REGISTER_FEATURE(Feats::ChestResizer);
     REGISTER_FEATURE(Feats::AbilityFailure);
     REGISTER_FEATURE(Feats::InfDodge);
 
