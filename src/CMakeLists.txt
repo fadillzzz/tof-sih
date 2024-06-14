@@ -27,7 +27,9 @@ add_library(TOFInternal SHARED
     feats/inf_dodge.cpp
     feats/ability_failure.cpp
     feats/no_transparency.cpp
-    feats/chest_resizer.cpp
+    feats/resizer.cpp
+    feats/resizer/chest.cpp
+    feats/resizer/pelvis.cpp
     feats/esp.cpp
     feats/esp/box.cpp
     feats/esp/nucleus.cpp
