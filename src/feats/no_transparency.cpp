@@ -13,7 +13,10 @@ namespace Feats {
                 localPlayer->PlayerController->PlayerCameraManager != nullptr) {
                 const auto cameraManager =
                     (SDK::ABP_CameraManager_C *)localPlayer->PlayerController->PlayerCameraManager;
-                cameraManager->EnablePlayerFade(!noTransparencyEnabled);
+
+                if (cameraManager->IsA(SDK::ABP_CameraManager_C::StaticClass())) {
+                    cameraManager->EnablePlayerFade(!noTransparencyEnabled);
+                }
             }
         }
 
