@@ -35,7 +35,7 @@ namespace Feats {
         }
 
         void enableAndLock() {
-            *enabled = true;
+            enabled = true;
             locks++;
         }
 

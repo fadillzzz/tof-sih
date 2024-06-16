@@ -14,50 +14,40 @@ namespace Config {
     void shutdown();
     void save();
 
-    template <typename T>
-    concept isVectorOrSet =
-        std::is_same_v<T, std::vector<typename T::value_type>> || std::is_same_v<T, std::set<typename T::value_type>>;
-
     template <typename T> struct field {
         field() = default;
-        template <isVectorOrSet T> field(nlohmann::json::json_pointer k, T val) : k(k) { ptr = new T(val); }
-        field(nlohmann::json::json_pointer k, T *ptr) : k(k), ptr(ptr) {}
+        field(nlohmann::json::json_pointer k, std::shared_ptr<T> ptr) : k(k), ptr(ptr) {}
 
-        T *operator->() const { return ptr; }
+        // How to shoot yourself in the foot
 
-        T &operator*() const {
+        T *operator->() const {
             config[k] = *ptr;
+            return ptr.get();
+        }
 
+        T operator*() {
+            config[k] = *ptr;
             return *ptr;
         }
 
-        T *operator&() const { return ptr; }
+        T *operator&() const {
+            config[k] = *ptr;
+            return ptr.get();
+        }
 
-        std::string operator=(const std::string &val) {
+        T operator=(const T &val) {
             *ptr = val;
             config[k] = *ptr;
 
             return val;
         }
 
+        T get() const { return *ptr; }
+
       private:
         nlohmann::json::json_pointer k;
-        T *ptr;
+        std::shared_ptr<T> ptr;
     };
-
-    template <isVectorOrSet T> Config::field<T> get(const std::string key, T def) {
-        auto k = nlohmann::json::json_pointer(key);
-
-        if (!config.contains(k)) {
-            config[k] = def;
-        }
-
-        auto realPtr = config[k].get<T>();
-
-        field<T> ret = {k, realPtr};
-
-        return ret;
-    }
 
     template <typename T> Config::field<T> get(const std::string key, T def) {
         auto k = nlohmann::json::json_pointer(key);
@@ -66,9 +56,9 @@ namespace Config {
             config[k] = def;
         }
 
-        auto realPtr = config[k].get_ptr<T *>();
+        auto ptr = std::make_shared<T>(config[k].get<T>());
 
-        field<T> ret = {k, realPtr};
+        field<T> ret = {k, ptr};
 
         return ret;
     }
