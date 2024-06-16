@@ -26,7 +26,7 @@ namespace Feats {
 
         void tick() {
             if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
-                *enabled = !*enabled;
+                enabled = !*enabled;
 
                 if (!*enabled) {
                     applySpeed(defaultVelocity);
@@ -48,7 +48,7 @@ namespace Feats {
             }
 
             if (*height <= 0.0f) {
-                *height = defaultVelocity;
+                height = defaultVelocity;
             }
 
             if (ImGui::Checkbox("Enable Jump Height", &enabled)) {
@@ -64,7 +64,7 @@ namespace Feats {
             ImGui::SameLine();
             ImGui::PushID("reset_jump_height");
             if (ImGui::Button("Reset")) {
-                *height = defaultVelocity;
+                height = defaultVelocity;
             }
             ImGui::PopID();
             ImGui::Unindent();

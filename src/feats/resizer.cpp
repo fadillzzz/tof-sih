@@ -16,7 +16,7 @@ namespace Feats {
                     animInstance = (SDK::UQRSLAnimInstance *)character->GetAnimInstance();
                 }
 
-                if (animInstance != nullptr) {
+                if (animInstance != nullptr && animInstance->IsA(SDK::UQRSLAnimInstance::StaticClass())) {
                     if (Chest::isEnabled()) {
                         Chest::applyModification(animInstance);
                     }

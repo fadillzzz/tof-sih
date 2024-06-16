@@ -1,3 +1,4 @@
+#include "fov.hpp"
 #include "../globals.hpp"
 
 namespace Feats {
@@ -30,7 +31,7 @@ namespace Feats {
             ImGui::SameLine();
             ImGui::PushID("reset_fov");
             if (ImGui::Button("Reset")) {
-                *fov = 75.0f;
+                fov = 75.0f;
             }
             ImGui::PopID();
         }

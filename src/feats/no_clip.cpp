@@ -44,7 +44,7 @@ namespace Feats {
             if (Feats::Hotkey::hotkeyPressed(confToggleEnabled) &&
                 std::chrono::system_clock::now() - lastToggle >
                     std::chrono::milliseconds((int)(io.KeyRepeatDelay * 1000))) {
-                *enabled = !*enabled;
+                enabled = !*enabled;
                 toggle();
                 lastToggle = std::chrono::system_clock::now();
                 return;

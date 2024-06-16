@@ -53,7 +53,7 @@ namespace Feats {
 
         void tick() {
             if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
-                *enabled = !*enabled;
+                enabled = !*enabled;
 
                 if (!*enabled) {
                     applySpeed(defaultSpeed);
@@ -80,7 +80,7 @@ namespace Feats {
             }
 
             if (*speed <= 0.0f) {
-                *speed = defaultSpeed;
+                speed = defaultSpeed;
             }
 
             if (ImGui::Checkbox("Enable Movement Speed", &enabled)) {
@@ -96,7 +96,7 @@ namespace Feats {
             ImGui::SameLine();
             ImGui::PushID("reset_movement_speed");
             if (ImGui::Button("Reset")) {
-                *speed = defaultSpeed;
+                speed = defaultSpeed;
             }
             ImGui::PopID();
             ImGui::Unindent();
