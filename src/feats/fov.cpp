@@ -18,7 +18,7 @@ namespace Feats {
                     localPlayer->PlayerController->PlayerCameraManager != nullptr) {
                     const auto cameraManager = localPlayer->PlayerController->PlayerCameraManager;
 
-                    if (cameraManager->GetName().find("BP_CameraManager_C") != std::string::npos) {
+                    if (cameraManager->IsA(SDK::ABP_CameraManager_C::StaticClass())) {
                         ((SDK::ABP_CameraManager_C *)cameraManager)->GMSetFOV(*fov);
                     }
                 }
