@@ -34,7 +34,7 @@ jobs:
       - uses: lukka/get-cmake@latest
 
       - name: Configure CMake
-        run: cmake -B build -S . -DBUILD_STEAM_VERSION=${{ matrix.game_version == 'steam' && 'ON' || 'OFF' }}
+        run: cmake -G Ninja -B build -S . -DBUILD_STEAM_VERSION=${{ matrix.game_version == 'steam' && 'ON' || 'OFF' }}
 
       - name: Build project
         run: cmake --build build --config Release
