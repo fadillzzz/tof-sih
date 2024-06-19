@@ -249,7 +249,7 @@ int main() {
     }
 
     auto configuredInjectionMethod = Config::get<std::string>("/injectionMethod", "");
-    std::string injectionMethod = "loadLibrary";
+    std::string injectionMethod = "manual";
 
     if (!configuredInjectionMethod->empty()) {
         injectionMethod = std::string(configuredInjectionMethod->begin(), configuredInjectionMethod->end());
@@ -273,10 +273,14 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
+    auto shouldUndoProtection = Config::get<bool>("/undoProtection", false);
+
     HANDLE proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, qrslPid);
     bool result = false;
 
-    undoProtection(proc);
+    if (*shouldUndoProtection) {
+        undoProtection(proc);
+    }
 
     const auto dllPath = directory + L"TOFInternal.dll";
 
