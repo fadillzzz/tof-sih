@@ -30,6 +30,7 @@ add_library(TOFInternal SHARED
     feats/resizer.cpp
     feats/resizer/chest.cpp
     feats/resizer/pelvis.cpp
+    feats/display_poi.cpp
     feats/esp.cpp
     feats/esp/box.cpp
     feats/esp/nucleus.cpp

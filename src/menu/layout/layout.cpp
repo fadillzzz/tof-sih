@@ -2,7 +2,7 @@
 #include "../../feats/ability_failure.hpp"
 #include "../../feats/about.hpp"
 #include "../../feats/chain_logging.hpp"
-#include "../../feats/resizer.hpp"
+#include "../../feats/display_poi.hpp"
 #include "../../feats/esp.hpp"
 #include "../../feats/fov.hpp"
 #include "../../feats/hotkey.hpp"
@@ -15,6 +15,7 @@
 #include "../../feats/no_transparency.hpp"
 #include "../../feats/quest.hpp"
 #include "../../feats/rapid_attack.hpp"
+#include "../../feats/resizer.hpp"
 #include "../../feats/teleport_anywhere.hpp"
 #include "../../feats/teleport_box.hpp"
 #include "../../feats/teleport_nucleus.hpp"
@@ -69,7 +70,12 @@ namespace Menu {
                 }
             });
 
-            std::array<const char *, 3> worldOptions = {"Teleport", "Quest", "ESP"};
+            std::array<const char *, 4> worldOptions = {
+                "Teleport",
+                "Quest",
+                "ESP",
+                "Visual",
+            };
             tabContent("World", worldOptions, &selectedWorldOption, []() {
                 switch (selectedWorldOption) {
                 case 0:
@@ -82,6 +88,9 @@ namespace Menu {
                     break;
                 case 2:
                     Feats::Esp::menu();
+                    break;
+                case 3:
+                    Feats::DisplayPoi::menu();
                     break;
                 }
             });
