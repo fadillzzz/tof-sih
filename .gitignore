@@ -1,3 +1,5 @@
 build/
 CppSDK/*
+CppSDK_global/
+CppSDK_cn/
 !CppSDK/CMakeLists.txt
