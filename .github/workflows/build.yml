@@ -22,7 +22,7 @@ jobs:
 
             - name: Download SDK
               run: |
-                    $sdk_link = "${{ vars.SDK_LINK }}"
+                    $sdk_link = "${{ secrets.SDK_LINK }}"
                     Invoke-WebRequest -Uri $sdk_link -OutFile sdk.zip
                     Expand-Archive -Path sdk.zip -DestinationPath CppSDK
 
