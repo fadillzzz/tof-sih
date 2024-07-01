@@ -1,13 +1,13 @@
 #include "display_poi.hpp"
 #include "../globals.hpp"
 #include "../sig.hpp"
+#include "hotkey.hpp"
 
 namespace Feats {
     namespace DisplayPoi {
-        uint8_t scanStatus = 0;
+        enum ScanStatus { NOT_SCANNED = 0, SCANNING = 1, FINISHED = 2, FAILED = 3 };
 
-        void init() {}
-        void tick() {}
+        uint8_t scanStatus = NOT_SCANNED;
 
         uintptr_t scanEx(const char *pattern) {
             MEMORY_BASIC_INFORMATION mbi;
@@ -75,33 +75,67 @@ namespace Feats {
                     SDK::UDataTableFunctionLibrary::GetDataTableRowNames(poiData, &poiNames);
                     const auto totalRows = poiNames.Num();
 
+                    SDK::FName iconClassName;
+                    iconClassName.Number = 0;
+
                     for (size_t i = 0; i < totalRows; i++) {
                         const auto poi = *(SDK::FMiniMapPOIData **)(firstIndex + i * 0x18);
                         poi->VisibleZoomRange.LowerBound.Value = 0.0f;
                         poi->VisibleZoomRange.UpperBound.Value = 1.0f;
                         poi->ValidBigMapDistance = 0.0f;
                         poi->ValidMinimapDistance = 0.0f;
-                    }
-                }
-            }
+                        poi->bIsCanTransfer = true;
+                        poi->bIsCanShowTips = false;
+                        poi->bIsCanInteract = true;
 
-            scanStatus++;
+                        if (iconClassName.Number == 0 &&
+                            poi->MapIconInfoClassName.ToString() == "SkillTransferMapIconInfo") {
+                            iconClassName = poi->MapIconInfoClassName;
+                        }
+                    }
+
+                    for (size_t i = 0; i < totalRows; i++) {
+                        const auto poi = *(SDK::FMiniMapPOIData **)(firstIndex + i * 0x18);
+                        poi->MapIconInfoClassName = iconClassName;
+                    }
+
+                    scanStatus = FINISHED;
+                } else {
+                    scanStatus = FAILED;
+                }
+            } else {
+                scanStatus = FAILED;
+            }
+        }
+
+        void startScan() {
+            if (scanStatus == NOT_SCANNED) {
+                std::thread(scan).detach();
+                scanStatus = SCANNING;
+            }
+        }
+
+        void init() {}
+
+        void tick() {
+            if (Feats::Hotkey::hotkeyPressed(confActivate)) {
+                startScan();
+            }
         }
 
         void menu() {
             if (ImGui::Button("Display all detectable POI in map (slow)")) {
-                if (scanStatus == 0) {
-                    std::thread(scan).detach();
-                    scanStatus++;
-                }
+                startScan();
             }
 
             ImGui::SameLine();
 
-            if (scanStatus == 1) {
+            if (scanStatus == SCANNING) {
                 ImGui::Text("Scanning...");
-            } else if (scanStatus == 2) {
+            } else if (scanStatus == FINISHED) {
                 ImGui::Text("Finished");
+            } else if (scanStatus == FAILED) {
+                ImGui::Text("Failed to scan for pattern");
             }
         }
     } // namespace DisplayPoi

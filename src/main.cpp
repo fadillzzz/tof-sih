@@ -3,6 +3,7 @@
 #include "feats/ability_failure.hpp"
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
+#include "feats/display_poi.hpp"
 #include "feats/esp.hpp"
 #include "feats/fov.hpp"
 #include "feats/hotkey.hpp"
@@ -63,6 +64,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::Hotkey);
     REGISTER_FEATURE(Feats::TeleportBox);
     REGISTER_FEATURE(Feats::JumpHeight);
+    REGISTER_FEATURE(Feats::DisplayPoi);
     REGISTER_FEATURE(Feats::Esp);
     REGISTER_FEATURE(Feats::RapidAttack);
     REGISTER_FEATURE(Feats::NoTransparency);
