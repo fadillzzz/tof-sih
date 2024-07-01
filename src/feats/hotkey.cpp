@@ -1,6 +1,7 @@
 #include "hotkey.hpp"
 #include "../logger/logger.hpp"
 #include "../main.hpp"
+#include "display_poi.hpp"
 #include "esp.hpp"
 #include "inf_dodge.hpp"
 #include "jump_height.hpp"
@@ -48,6 +49,7 @@ namespace Feats {
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Rapid attack", Feats::RapidAttack::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("Infinite dodge", Feats::InfDodge::confToggleEnabled);
             ASSIGN_BINDINGS_EMPTY_DEFAULT("No transparency", Feats::NoTransparency::confToggleEnabled);
+            ASSIGN_BINDINGS_EMPTY_DEFAULT("Display all POIs", Feats::DisplayPoi::confActivate);
             ASSIGN_BINDINGS("Toggle menu", confToggle, {defaultToggleKey});
         }
 

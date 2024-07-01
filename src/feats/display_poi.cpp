@@ -1,15 +1,13 @@
 #include "display_poi.hpp"
 #include "../globals.hpp"
 #include "../sig.hpp"
+#include "hotkey.hpp"
 
 namespace Feats {
     namespace DisplayPoi {
         enum ScanStatus { NOT_SCANNED = 0, SCANNING = 1, FINISHED = 2, FAILED = 3 };
 
         uint8_t scanStatus = NOT_SCANNED;
-
-        void init() {}
-        void tick() {}
 
         uintptr_t scanEx(const char *pattern) {
             MEMORY_BASIC_INFORMATION mbi;
@@ -110,12 +108,24 @@ namespace Feats {
             }
         }
 
+        void startScan() {
+            if (scanStatus == NOT_SCANNED) {
+                std::thread(scan).detach();
+                scanStatus = SCANNING;
+            }
+        }
+
+        void init() {}
+
+        void tick() {
+            if (Feats::Hotkey::hotkeyPressed(confActivate)) {
+                startScan();
+            }
+        }
+
         void menu() {
             if (ImGui::Button("Display all detectable POI in map (slow)")) {
-                if (scanStatus == NOT_SCANNED) {
-                    std::thread(scan).detach();
-                    scanStatus = SCANNING;
-                }
+                startScan();
             }
 
             ImGui::SameLine();
