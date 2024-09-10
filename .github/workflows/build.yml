@@ -43,6 +43,11 @@ jobs:
       - name: Build Injector
         run: cmake --build injector/build --config Release
 
+      - name: Move Injector Files
+        run: |
+          Move-Item injector/build/bin/Release/injector.exe build/bin/Release/injector.exe
+          Move-Item injector/build/bin/Release/_aux.dll build/bin/Release/_aux.dll
+
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -50,5 +55,5 @@ jobs:
           path: |
             build/bin/Release/TOFInternal.dll
             build/bin/Release/proc.exe
-            injector/build/bin/Release/injector.exe
-            injector/build/bin/Release/_aux.dll
+            build/bin/Release/injector.exe
+            build/bin/Release/_aux.dll
