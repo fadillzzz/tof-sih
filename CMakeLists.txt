@@ -17,13 +17,8 @@ if (BUILD_STEAM_VERSION)
     add_definitions(-DIS_STEAM_VERSION)
 endif()
 
-include(FetchContent)
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
-FetchContent_MakeAvailable(json)
-
 add_subdirectory(src)
 add_subdirectory(CppSDK)
 add_subdirectory(cfg)
-add_subdirectory(injector)
 add_subdirectory(tools)
 add_subdirectory(kiero/minhook)

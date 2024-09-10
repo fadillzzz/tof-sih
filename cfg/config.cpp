@@ -76,5 +76,8 @@ namespace Config {
         saveThreadStarted = true;
     }
 
-    void shutdown() { shuttingDown = true; }
+    void shutdown() {
+        actualSave();
+        shuttingDown = true;
+    }
 } // namespace Config

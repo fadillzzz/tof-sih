@@ -1,6 +1,5 @@
 #include "config.hpp"
 #include "inject.hpp"
-#include "manual.hpp"
 
 #define ThreadQuerySetWin32StartAddress 9
 
@@ -97,121 +96,17 @@ DWORD GetProcId(const wchar_t *procName) {
     return procId;
 }
 
-uintptr_t GetModuleBaseAddress(HANDLE handleSnapshot, const wchar_t *moduleName) {
-    uintptr_t address = 0;
-
-    if (handleSnapshot != INVALID_HANDLE_VALUE) {
-        MODULEENTRY32 moduleEntry;
-
-        moduleEntry.dwSize = sizeof(moduleEntry);
-
-        if (!Module32First(handleSnapshot, &moduleEntry)) {
-            return address;
-        }
-
-        do {
-            if (_wcsicmp(moduleEntry.szModule, moduleName) == 0) {
-                address = (uintptr_t)moduleEntry.modBaseAddr;
-                break;
-            }
-        } while (Module32Next(handleSnapshot, &moduleEntry));
-    }
-
-    return address;
-}
-
-bool SuspendProtection(HANDLE hProcess, DWORD pid, uintptr_t protAddr, HANDLE ntdllHandle) {
-    THREADENTRY32 te32{};
-    HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-    te32.dwSize = sizeof(te32);
-    for (Thread32First(hThreadSnap, &te32); Thread32Next(hThreadSnap, &te32);) {
-        if (te32.th32OwnerProcessID == pid) {
-            PVOID threadInfo;
-            ULONG retLen;
-            auto NtQueryInformationThread =
-                (NtQueryInformationThread_t)GetProcAddress((HMODULE)ntdllHandle, "NtQueryInformationThread");
-            if (NtQueryInformationThread == nullptr)
-                return false;
-
-            HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, 0, te32.th32ThreadID);
-            NTSTATUS ntqiRet =
-                NtQueryInformationThread(hThread, ThreadQuerySetWin32StartAddress, &threadInfo, sizeof(PVOID), &retLen);
-
-            MEMORY_BASIC_INFORMATION mbi;
-            if (VirtualQueryEx(hProcess, (LPCVOID)threadInfo, &mbi, sizeof(mbi))) {
-                auto baseAddress = reinterpret_cast<uintptr_t>(mbi.AllocationBase);
-                if (baseAddress == protAddr) {
-                    std::cout << "Suspending protection thread" << std::endl;
-                    SuspendThread(hThread);
-                    CloseHandle(hThread);
-                    return true;
-                }
-            }
-        }
-    }
-    CloseHandle(hThreadSnap);
-    return false;
-}
-
-void undoProtection(HANDLE handle) {
-    std::cout << "Attempting to undo protection..." << std::endl;
-
-    const auto procId = GetProcessId(handle);
-    const auto names = {"NtQueryAttributesFile", "NtCreateThread", "NtCreateThreadEx", "LdrInitializeThunk"};
-    const auto originals = {_byteswap_uint64(0x4C8BD1B83D000000), _byteswap_uint64(0x4C8BD1B84E000000),
-                            _byteswap_uint64(0x4C8BD1B8C2000000), _byteswap_uint64(0x40534883EC20488B)};
-
-    uintptr_t QRSL_es = 0;
-    uintptr_t ntdllHandle = 0;
-    uint8_t restored = 0;
-
-    do {
-        const auto moduleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, procId);
-        QRSL_es = GetModuleBaseAddress(moduleSnapshot, L"QRSL_es.dll");
-        ntdllHandle = GetModuleBaseAddress(moduleSnapshot, L"ntdll.dll");
-        CloseHandle(moduleSnapshot);
-    } while (!QRSL_es || !ntdllHandle);
-
-    std::cout << std::hex;
-    std::cout << "QRSL_es.dll: " << QRSL_es << std::endl;
-    std::cout << "ntdll.dll: " << ntdllHandle << std::endl;
-
-    std::cout << "Waiting for a few seconds before restoring hooked functions..." << std::endl;
-
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-
-    while (restored < names.size()) {
-        for (size_t i = 0; i < names.size(); i++) {
-            const auto name = *(names.begin() + i);
-            const auto original = *(originals.begin() + i);
-            const auto byteArr = reinterpret_cast<const char *>(&original);
-            const auto address = (uintptr_t)GetProcAddress((HMODULE)ntdllHandle, name);
-            if (address) {
-                size_t current;
-                ReadProcessMemory(handle, (LPCVOID)address, &current, sizeof(size_t), nullptr);
-
-                if (original != current) {
-                    std::cout << "Restoring " << name << std::endl;
-                    DWORD oldProtect;
-                    VirtualProtectEx(handle, (LPVOID)address, sizeof(size_t), PAGE_EXECUTE_READWRITE, &oldProtect);
-                    WriteProcessMemory(handle, (LPVOID)address, byteArr, sizeof(size_t), nullptr);
-                    VirtualProtectEx(handle, (LPVOID)address, sizeof(size_t), oldProtect, nullptr);
-                    restored++;
-                }
-            }
-        }
-    }
-
-    SuspendProtection(handle, procId, QRSL_es, (HANDLE)ntdllHandle);
-}
+HWND launcherWindow = NULL;
 
 int main() {
-    const auto launcherPid = GetProcId(L"tof_launcher.exe");
+    auto launcherPid = GetProcId(L"tof_launcher.exe");
 
     if (launcherPid != 0) {
         std::cout << "Launcher is already running." << std::endl;
-        std::cout << "If it wasn't started by this injector. Please close it and launch the injector again."
-                  << std::endl;
+        std::cout
+            << "If you're running the official build of the game, please close the launcher and run the injector again."
+            << std::endl;
+        std::cout << "If you're running the Steam build of the game, you can ignore this message" << std::endl;
     }
 
     const uint16_t pathSize = 2048;
@@ -248,16 +143,24 @@ int main() {
         return 1;
     }
 
-    auto configuredInjectionMethod = Config::get<std::string>("/injectionMethod", "");
-    std::string injectionMethod = "manual";
+    launcherPid = GetProcId(L"tof_launcher.exe");
+    const auto launcherProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, launcherPid);
 
-    if (!configuredInjectionMethod->empty()) {
-        injectionMethod = std::string(configuredInjectionMethod->begin(), configuredInjectionMethod->end());
-    } else {
-        configuredInjectionMethod = injectionMethod;
+    // Sleep for a bit to wait for the launcher to start
+    Sleep(1000);
+
+    const auto thread = InjectDll(launcherProc, directory + L"_aux.dll");
+    WaitForSingleObject(thread, INFINITE);
+
+    launcherWindow = FindWindow(L"TWINCONTROL", L"Tower of Fantasy");
+
+    if (launcherWindow == nullptr) {
+        std::cout << "Failed to find launcher window." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        return 1;
     }
 
-    std::cout << "Injection method: " << injectionMethod << std::endl;
+    SendMessage(launcherWindow, WM_USER + 0x420, (uintptr_t)CreateProcessW, 0);
 
     std::cout << "Launcher has been started. Please start the game from the launcher." << std::endl;
 
@@ -269,54 +172,11 @@ int main() {
         if (qrslPid != 0) {
             break;
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-
-    auto shouldUndoProtection = Config::get<bool>("/undoProtection", false);
-
-    HANDLE proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, qrslPid);
-    bool result = false;
-
-    if (*shouldUndoProtection) {
-        undoProtection(proc);
-    }
-
-    const auto dllPath = directory + L"TOFInternal.dll";
-
-    std::wcout << L"Injecting " + dllPath << std::endl;
-
-    if (injectionMethod == "manual") {
-        std::ifstream dllFile(dllPath, std::ios::binary | std::ios::ate);
-        auto dllSize = dllFile.tellg();
-        BYTE *pSrcData = new BYTE[(UINT_PTR)dllSize];
-        dllFile.seekg(0, std::ios::beg);
-        dllFile.read((char *)(pSrcData), dllSize);
-        dllFile.close();
-
-        result =
-            ManualMapDll<const wchar_t *>(proc, pSrcData, dllSize, "preMain", directory.c_str(), directory.size() * 2);
-
-        delete[] pSrcData;
-    } else if (injectionMethod == "loadLibrary") {
-        result = InjectDll(proc, dllPath.c_str());
-    } else {
-        std::cout << "Invalid injection method." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        return 1;
-    }
-
-    if (result) {
-        std::cout << "Injected successfully." << std::endl;
-    } else {
-        std::cout << "Failed to inject." << std::endl;
-    }
-
-    CloseHandle(proc);
 
     Config::shutdown();
 
-    std::this_thread::sleep_for(std::chrono::seconds(4));
+    ShellExecuteW(nullptr, nullptr, L"proc.exe", std::to_wstring(qrslPid).c_str(), nullptr, SW_HIDE);
 
     return 0;
 }
