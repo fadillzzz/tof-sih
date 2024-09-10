@@ -11,6 +11,11 @@
 > This is for educational purposes only!
 > **The safety of your account is entirely your responsibility. If it gets banned by using this, it's your own fault! (You have been warned.)**
 
+## How to Use
+
+Simply run the provided injector and select the game launcher executable.
+If you're playing the Steam version, start the launcher via Steam, then run the injector.
+
 ## External Library Credits
 
 - [Dear ImGui](https://github.com/ocornut/imgui)

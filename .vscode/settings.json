@@ -88,5 +88,10 @@
     },
     "cmake.preferredGenerators": [
         "Visual Studio 17 2022"
-    ]
+    ],
+    "cmake.sourceDirectory": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/injector"
+    ],
+    "cmake.buildDirectory": "${sourceDirectory}/build"
 }
