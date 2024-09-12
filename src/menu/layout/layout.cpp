@@ -3,6 +3,7 @@
 #include "../../feats/about.hpp"
 #include "../../feats/chain_logging.hpp"
 #include "../../feats/display_poi.hpp"
+#include "../../feats/early_init.hpp"
 #include "../../feats/esp.hpp"
 #include "../../feats/fov.hpp"
 #include "../../feats/hotkey.hpp"
@@ -97,6 +98,7 @@ namespace Menu {
 
             if (ImGui::BeginTabItem("Misc")) {
                 Feats::Login::menu();
+                Feats::EarlyInit::menu();
                 ImGui::EndTabItem();
             }
 
