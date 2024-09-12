@@ -4,6 +4,7 @@
 #include "feats/anti_anti_cheat.hpp"
 #include "feats/chain_logging.hpp"
 #include "feats/display_poi.hpp"
+#include "feats/early_init.hpp"
 #include "feats/esp.hpp"
 #include "feats/fov.hpp"
 #include "feats/hotkey.hpp"
@@ -47,6 +48,23 @@ int MainThread(HINSTANCE hInstDLL) {
 
     Logger::success("Game instance found!");
 
+    auto initEarly = Config::get<bool>(Feats::EarlyInit::confEnabled, false);
+
+    if (*initEarly == false) {
+        bool isAtLoginPage = false;
+        while (true) {
+            const auto world = Globals::getWorld();
+            if (world->GetName() == "Login_P") {
+                isAtLoginPage = true;
+                Logger::info("Waiting for character to be loaded...");
+            } else if (isAtLoginPage) {
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        }
+    }
+
     Menu::init();
     Hooks::init();
 
@@ -71,6 +89,7 @@ int MainThread(HINSTANCE hInstDLL) {
     REGISTER_FEATURE(Feats::Resizer);
     REGISTER_FEATURE(Feats::AbilityFailure);
     REGISTER_FEATURE(Feats::InfDodge);
+    REGISTER_FEATURE(Feats::EarlyInit);
 
     while (true) {
         if (Feats::Hotkey::hotkeyPressed(confExit)) {
