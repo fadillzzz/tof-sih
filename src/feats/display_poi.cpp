@@ -84,15 +84,21 @@ namespace Feats {
                         poi->VisibleZoomRange.UpperBound.Value = 1.0f;
                         poi->ValidBigMapDistance = 0.0f;
                         poi->ValidMinimapDistance = 0.0f;
-                        poi->bIsCanTransfer = true;
-                        poi->bIsCanShowTips = false;
-                        poi->bIsCanInteract = true;
+                    // Disabled Nan Yin's POI Teleport Exploit (Was patched)
+                    //     poi->bIsCanTransfer = true;
+                    //     poi->bIsCanShowTips = false;
+                    //     poi->bIsCanInteract = true;
 
-                        if (iconClassName.Number == 0 &&
-                            poi->MapIconInfoClassName.ToString() == "SkillTransferMapIconInfo") {
-                            iconClassName = poi->MapIconInfoClassName;
-                        }
+                    //     if (iconClassName.Number == 0 &&
+                    //         poi->MapIconInfoClassName.ToString() == "SkillTransferMapIconInfo") {
+                    //         iconClassName = poi->MapIconInfoClassName;
+                    //     }
                     }
+
+                    // for (size_t i = 0; i < totalRows; i++) {
+                    //     const auto poi = *(SDK::FMiniMapPOIData **)(firstIndex + i * 0x18);
+                    //     poi->MapIconInfoClassName = iconClassName;
+                    // }
 
                     for (size_t i = 0; i < totalRows; i++) {
                         const auto poi = *(SDK::FMiniMapPOIData **)(firstIndex + i * 0x18);
