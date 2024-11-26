@@ -3,7 +3,7 @@
 [![](https://dcbadge.vercel.app/api/server/5PGzs9zmVy)](https://discord.gg/5PGzs9zmVy)
 
 > [!Note]
-> Latest build available is for version 4.4.0 (official launcher & Steam versions)
+> Latest build available is for version 4.4.5 (official launcher & Steam versions)
 
 > Default button to open menu (Insert) key.
 
