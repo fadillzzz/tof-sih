@@ -93,16 +93,16 @@ namespace Feats {
                     //         poi->MapIconInfoClassName.ToString() == "SkillTransferMapIconInfo") {
                     //         iconClassName = poi->MapIconInfoClassName;
                     //     }
-                    }
+                    //}
 
                     // for (size_t i = 0; i < totalRows; i++) {
                     //     const auto poi = *(SDK::FMiniMapPOIData **)(firstIndex + i * 0x18);
                     //     poi->MapIconInfoClassName = iconClassName;
                     // }
 
-                    for (size_t i = 0; i < totalRows; i++) {
-                        const auto poi = *(SDK::FMiniMapPOIData **)(firstIndex + i * 0x18);
-                        poi->MapIconInfoClassName = iconClassName;
+                    //for (size_t i = 0; i < totalRows; i++) {
+                    //    const auto poi = *(SDK::FMiniMapPOIData **)(firstIndex + i * 0x18);
+                    //    poi->MapIconInfoClassName = iconClassName;
                     }
 
                     scanStatus = FINISHED;
