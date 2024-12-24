@@ -23,7 +23,6 @@ PWSTR askForLauncherPath() {
         if (SUCCEEDED(hr)) {
             const COMDLG_FILTERSPEC filter[] = {
                 {L"TOF Launcher", L"tof_launcher.exe"},
-                {L"TOF Launcher", L"WmgpMobileGame.exe"},
             };
             pFileOpen->SetFileTypes(ARRAYSIZE(filter), filter);
             // Show the Open dialog box.
