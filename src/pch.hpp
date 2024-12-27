@@ -13,11 +13,12 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <mutex>
+#include <ranges>
 #include <set>
+#include <string>
 #include <thread>
 #include <vector>
-#include <ranges>
-#include <mutex>
 
 #include "../CppSDK/SDK.hpp"
 #define IMGUI_DISABLE_OBSOLETE_KEYIO
