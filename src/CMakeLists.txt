@@ -45,7 +45,6 @@ add_library(TOFInternal SHARED
     feats/esp/particle_fish.cpp
     feats/esp/fish_baiter.cpp
 )
-add_executable(proc proc.cpp)
 target_precompile_headers(TOFInternal PRIVATE pch.hpp)
 add_subdirectory(ext/imgui)
 add_subdirectory(ext/kiero)

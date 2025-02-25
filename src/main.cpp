@@ -36,6 +36,24 @@ std::vector<void *> registeredFeatures;
 extern "C" __declspec(dllexport) void preMain(const wchar_t *dir) { Config::setDirectory(dir); }
 
 int MainThread(HINSTANCE hInstDLL) {
+    bool hasWindow = false;
+    while (hasWindow == false) {
+        EnumWindows(
+            [](HWND hWnd, LPARAM lParam) {
+                DWORD pid;
+                GetWindowThreadProcessId(hWnd, &pid);
+
+                if (pid == GetCurrentProcessId()) {
+                    *(bool *)lParam = true;
+                    return FALSE;
+                }
+
+                return TRUE;
+            },
+            (long long)&hasWindow);
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
+
     Logger::init();
     Logger::info("Initializing...");
 

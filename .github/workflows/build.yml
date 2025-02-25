@@ -37,23 +37,11 @@ jobs:
       - name: Build TOF-SIH
         run: cmake --build build --config Release
 
-      - name: Configure Injector
-        run: cmake -B injector/build -S injector
-
-      - name: Build Injector
-        run: cmake --build injector/build --config Release
-
-      - name: Move Injector Files
-        run: |
-          Move-Item injector/build/bin/Release/injector.exe build/bin/Release/injector.exe
-          Move-Item injector/build/bin/Release/_aux.dll build/bin/Release/_aux.dll
-
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
           name: TOFInternal-${{ matrix.game_version }}
           path: |
             build/bin/Release/TOFInternal.dll
-            build/bin/Release/proc.exe
             build/bin/Release/injector.exe
             build/bin/Release/_aux.dll
