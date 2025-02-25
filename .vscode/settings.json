@@ -91,7 +91,6 @@
     ],
     "cmake.sourceDirectory": [
         "${workspaceFolder}",
-        "${workspaceFolder}/injector"
     ],
     "cmake.buildDirectory": "${sourceDirectory}/build"
 }

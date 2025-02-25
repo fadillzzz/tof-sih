@@ -22,7 +22,7 @@ PWSTR askForLauncherPath() {
 
         if (SUCCEEDED(hr)) {
             const COMDLG_FILTERSPEC filter[] = {
-                {L"TOF Launcher", L"tof_launcher.exe"},
+                {L"TOF Launcher", L"HottaGame.exe"},
             };
             pFileOpen->SetFileTypes(ARRAYSIZE(filter), filter);
             // Show the Open dialog box.
@@ -50,7 +50,7 @@ PWSTR askForLauncherPath() {
     return pszFilePath;
 }
 
-bool startLauncher(wchar_t *launcherPath) {
+HANDLE startLauncher(wchar_t *launcherPath) {
     STARTUPINFO si;
     si.cb = sizeof(si);
     ZeroMemory(&si, sizeof(si));
@@ -58,21 +58,26 @@ bool startLauncher(wchar_t *launcherPath) {
     ZeroMemory(&pi, sizeof(pi));
 
     SetEnvironmentVariable(L"__COMPAT_LAYER", L"RUNASINVOKER");
+    std::wstring path(launcherPath);
+    path += L" /launcher";
+
+    const auto cur = std::filesystem::current_path();
+
+    SetEnvironmentVariable(L"_____DIR", cur.wstring().c_str());
 
     const auto launcherProcessResult =
-        CreateProcess(nullptr, launcherPath, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
+        CreateProcess(nullptr, path.data(), nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
 
     if (!launcherProcessResult) {
         std::cout << "Failed to start the launcher. Exiting..." << std::endl;
         std::cout << "Error: " << GetLastError() << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(3));
-        return false;
+        return INVALID_HANDLE_VALUE;
     }
 
     CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
 
-    return true;
+    return pi.hThread;
 }
 
 DWORD GetProcId(const wchar_t *procName) {
@@ -139,44 +144,23 @@ int main() {
 
     auto wideLauncherPath = std::wstring(launcherPath->begin(), launcherPath->end());
 
-    if (!startLauncher(wideLauncherPath.data())) {
+    auto launcherThread = startLauncher(wideLauncherPath.data());
+
+    if (launcherThread == INVALID_HANDLE_VALUE) {
         return 1;
     }
 
-    launcherPid = GetProcId(L"tof_launcher.exe");
+    const auto launcherFileName = std::filesystem::path(wideLauncherPath.c_str()).filename().wstring();
+
+    launcherPid = GetProcId(launcherFileName.c_str());
     const auto launcherProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, launcherPid);
-
-    // Sleep for a bit to wait for the launcher to start
-    Sleep(1000);
-
     const auto thread = InjectDll(launcherProc, directory + L"_aux.dll");
-    WaitForSingleObject(thread, INFINITE);
-
-    launcherWindow = FindWindow(L"TWINCONTROL", L"Tower of Fantasy");
-
-    if (launcherWindow == nullptr) {
-        std::cout << "Failed to find launcher window." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-        return 1;
-    }
-
-    SendMessage(launcherWindow, WM_USER + 0x420, (uintptr_t)CreateProcessW, 0);
 
     std::cout << "Launcher has been started. Please start the game from the launcher." << std::endl;
 
-    DWORD qrslPid = 0;
-
-    while (true) {
-        qrslPid = GetProcId(L"QRSL.exe");
-
-        if (qrslPid != 0) {
-            break;
-        }
-    }
-
     Config::shutdown();
 
-    ShellExecuteW(nullptr, nullptr, L"proc.exe", std::to_wstring(qrslPid).c_str(), nullptr, SW_HIDE);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     return 0;
 }
