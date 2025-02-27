@@ -1,11 +1,31 @@
 #include "teleport_nucleus.hpp"
 #include "../globals.hpp"
+#include "../hooks.hpp"
 #include "../logger/logger.hpp"
 #include "hotkey.hpp"
 
 namespace Feats {
     namespace TeleportNucleus {
-        void init() { return; }
+        bool teleportNextTick = false;
+        SDK::FVector targetPos;
+
+        void init() {
+            Hooks::registerHook(
+                "Engine.ActorComponent.ReceiveTick",
+                [](SDK::UObject *pObject, SDK::UFunction *pFunction, void *pParams) -> Hooks::ExecutionFlag {
+                    if (teleportNextTick) {
+                        teleportNextTick = false;
+
+                        const auto character = Globals::getCharacter();
+
+                        if (character != nullptr) {
+                            character->SafeSetActorLocation(targetPos);
+                        }
+                    }
+
+                    return Hooks::ExecutionFlag::CONTINUE_EXECUTION;
+                });
+        }
 
         void teleport() {
             const auto character = Globals::getCharacter();
@@ -49,7 +69,8 @@ namespace Feats {
                             return;
                         }
 
-                        character->SafeSetActorLocation(newPos);
+                        teleportNextTick = true;
+                        targetPos = newPos;
                     }
                 }
             }
