@@ -49,11 +49,7 @@ namespace Feats {
                             return;
                         }
 
-                        character->CharacterMovement->SetMovementMode(SDK::EMovementMode::MOVE_Walking, 0);
-
-                        const auto location =
-                            (SDK::FVector *)((byte *)character->CharacterMovement->UpdatedComponent + 0x1E0);
-                        *location = newPos;
+                        character->SafeSetActorLocation(newPos);
                     }
                 }
             }
