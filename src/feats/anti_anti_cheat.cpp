@@ -10,6 +10,22 @@ namespace Feats {
                                        "HottaFramework.HottaPlayerCharacter.ServerRecordAbnormalJumpSectionData",
                                        "HottaFramework.HottaCharacter.ServerCheckEquipWeapon",
                                        "HottaFramework.HottaPlayerCharacter.ServerCheckQuestRealityState",
+                                       "HottaFramework.HottaPlayerCharacter.ClientOnTssSdkCheckMsgResult",
+                                       "HottaFramework.HottaPlayerCharacter.Server_TssSdkCheckMsg",
+                                       "HottaFramework.HottaPlayerCharacter.ServerReport",
+                                       "HottaFramework.HottaPlayerCharacter.ServerReportClientInfo",
+                                       "QRSL.QRSLPlayerController.ServerUploadBrokenPackages",
+                                       "QRSL.QRSLPlayerController.ServerUploadIntactPackages",
+                                       "HottaFramework.HottaPlayerController.ServerRequestAntiSpamHttpCheck",
+                                       "HottaFramework.HottaPlayerController.ClientResponseAntiSpamHttpCheck",
+                                       "Engine.PlayerController.ServerCheckClientPossession",
+                                       "Engine.PlayerController.ServerCheckClientPossessionReliable",
+                                       "QRSL.QRSLPlayerController.ClientNotifyBrokenPackages",
+                                       "QRSL.QRSLPlayerController.IsMapPackageIntact",
+                                       "QRSL.QRSLPlayerController.ServerExecuteConsoleCommand",
+                                       "HottaFramework.HottaCharacter.ServerStartPlayBufferEffect",
+                                       "HottaFramework.HottaPlayerCharacter.ClientResyncImportantProperty",
+                                       "HottaFramework.HottaPlayerCharacter.CheckResprint",        
                                        "HottaFramework.HottaPlayerCharacter.ServerRecordHarvestedItem"};
 
             for (const auto &funcName : funcNames) {
