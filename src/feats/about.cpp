@@ -16,6 +16,7 @@ namespace Feats {
             ImGui::Text("- cracksux");
             ImGui::Text("- griffith1deadly");
             ImGui::Text("- Illusions");
+            ImGui::Text("- Ruaridh");
 
             ImGui::Dummy(ImVec2(0, 10.0f));
 
