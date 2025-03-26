@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        game_version: ["official", "steam"]
+        game_version: ["official"]
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -32,7 +32,7 @@ jobs:
       - uses: lukka/get-cmake@latest
 
       - name: Configure TOF-SIH
-        run: cmake -B build -S . -DBUILD_STEAM_VERSION=${{ matrix.game_version == 'steam' && 'ON' || 'OFF' }}
+        run: cmake -B build -S . 
 
       - name: Build TOF-SIH
         run: cmake --build build --config Release
