@@ -1,16 +1,16 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#include <filesystem>
-#include <iostream>
 #include <string>
+#include <vector>
 
+#include "../src/memory_manager.hpp"
 #include "MinHook.h"
 #include "inject.hpp"
 
-void *createProcAddr = nullptr;
-void *createFileAddr = nullptr;
-void *deviceIoCtrlAddr = nullptr;
+void **createProcAddr = nullptr;
+void **createFileAddr = nullptr;
+void **deviceIoCtrlAddr = nullptr;
 HANDLE myHtHandle = (void *)0xBAADC0DE;
 
 typedef BOOL(WINAPI *deviceIoCtrl_t)(HANDLE hDevice, DWORD dwIoControlCode, LPVOID lpInBuffer, DWORD nInBufferSize,
@@ -94,22 +94,34 @@ void start() {
     while (createProcAddr == nullptr) {
         const auto mod = GetModuleHandle(L"kernelbase.dll");
         if (mod != nullptr) {
-            createProcAddr = GetProcAddress(mod, "CreateProcessW");
-            createFileAddr = GetProcAddress(mod, "CreateFileA");
-            deviceIoCtrlAddr = GetProcAddress(mod, "DeviceIoControl");
+            createProcAddr = (void **)GetProcAddress(mod, "CreateProcessW");
+            createFileAddr = (void **)GetProcAddress(mod, "CreateFileA");
+            deviceIoCtrlAddr = (void **)GetProcAddress(mod, "DeviceIoControl");
             break;
         }
         Sleep(100);
     }
 
-    MH_CreateHook(createProcAddr, createProcess, (void **)&oCreateProcessW);
+    MH_CreateHook(createProcAddr, (void **)createProcess, (void **)&oCreateProcessW);
     MH_EnableHook(createProcAddr);
 
-    MH_CreateHook(createFileAddr, createFile, (void **)&oCreateFileA);
+    MH_CreateHook(createFileAddr, (void **)createFile, (void **)&oCreateFileA);
     MH_EnableHook(createFileAddr);
 
-    MH_CreateHook(deviceIoCtrlAddr, deviceIoCtrl, (void **)&oDeviceIoCtrl);
+    MH_CreateHook(deviceIoCtrlAddr, (void **)deviceIoCtrl, (void **)&oDeviceIoCtrl);
     MH_EnableHook(deviceIoCtrlAddr);
+
+    MemoryManager memory;
+    std::vector<void *> result =
+        memory.PatternScan("48 89 4C 24 08 48 83 EC 48 48 8B 44 24 50 48 89 44 24 28 C7 44 24 20 00 00 00 00");
+
+    if (!result.empty()) {
+        const auto addr = result[0];
+        DWORD oldProtect;
+        VirtualProtect(addr, 1, PAGE_EXECUTE_READWRITE, &oldProtect);
+        *(uint8_t *)addr = 0xC3;
+        VirtualProtect(addr, 1, oldProtect, &oldProtect);
+    }
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpReserved) {
