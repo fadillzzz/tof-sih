@@ -13,7 +13,7 @@ namespace Logger {
     }
 
     void shutdown() {
-        fclose(stdout);
+        freopen_s((FILE **)stdout, "NUL:", "w", stdout);
         FreeConsole();
     }
 
