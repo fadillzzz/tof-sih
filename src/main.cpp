@@ -25,6 +25,7 @@
 #include "globals.hpp"
 #include "hooks.hpp"
 #include "logger/logger.hpp"
+#include "memory_manager.hpp"
 #include "menu/menu.hpp"
 
 std::vector<void *> registeredFeatures;
@@ -36,6 +37,17 @@ std::vector<void *> registeredFeatures;
 extern "C" __declspec(dllexport) void preMain(const wchar_t *dir) { Config::setDirectory(dir); }
 
 int MainThread(HINSTANCE hInstDLL) {
+    MemoryManager memory;
+    const auto result = memory.PatternScan("40 56 57 48 83 EC 38 33 FF", 1);
+
+    if (!result.empty()) {
+        const auto addr = result[0];
+        DWORD oldProtect;
+        VirtualProtect(addr, 1, PAGE_EXECUTE_READWRITE, &oldProtect);
+        *(byte *)addr = 0xC3;
+        VirtualProtect(addr, 1, oldProtect, &oldProtect);
+    }
+
     bool hasWindow = false;
     while (hasWindow == false) {
         EnumWindows(
@@ -53,6 +65,13 @@ int MainThread(HINSTANCE hInstDLL) {
             (long long)&hasWindow);
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
+
+    const auto ntdll = GetModuleHandle(L"ntdll.dll");
+    const auto dbgUiRemoteBreakin = (void **)GetProcAddress(ntdll, "DbgUiRemoteBreakin");
+    DWORD oldProtect;
+    VirtualProtect(dbgUiRemoteBreakin, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
+    memcpy(dbgUiRemoteBreakin, "\x48\x83\xEC\x28\x65", 5);
+    VirtualProtect(dbgUiRemoteBreakin, 5, oldProtect, &oldProtect);
 
     Logger::init();
     Logger::info("Initializing...");

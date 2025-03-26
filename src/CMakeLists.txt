@@ -1,5 +1,6 @@
 add_library(TOFInternal SHARED
     main.cpp
+    ../injector/inject.cpp
     globals.cpp
     hooks.cpp
     logger/logger.cpp
