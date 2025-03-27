@@ -3,3 +3,7 @@ CppSDK/*
 CppSDK_global/
 CppSDK_cn/
 !CppSDK/CMakeLists.txt
+.cache/
+CMakeUserPresets.json
+compile_commands.json
+
