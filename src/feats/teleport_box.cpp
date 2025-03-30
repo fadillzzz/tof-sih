@@ -36,7 +36,8 @@ namespace Feats {
                                                    return true;
                                                }
 
-                                               if (*((uint8_t *)box + 0xDC0) == 1) {
+                                               if (*(int *)(reinterpret_cast<uint8_t *>(&(box->PlayNotOpenParticle)) +
+                                                            sizeof(box->PlayNotOpenParticle)) == 1) {
                                                    return true;
                                                }
 
