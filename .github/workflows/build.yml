@@ -56,6 +56,12 @@ jobs:
         shell: bash
         run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: Zip build artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          $zipFile = "TOFInternal-${{ matrix.game_version }}.zip"
+          Compress-Archive -Path "build/bin/Release/TOFInternal.dll", "build/bin/Release/injector.exe", "build/bin/Release/_aux.dll" -DestinationPath $zipFile -Force
+
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
@@ -64,3 +70,4 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+          files: TOFInternal-${{ matrix.game_version }}.zip
