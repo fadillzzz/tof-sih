@@ -4,39 +4,29 @@ namespace Feats {
     namespace Esp {
         namespace Watcher {
             template <typename T>
-            void scanActors(SDK::UWorld *world, std::vector<std::shared_ptr<SDK::AActor>> &actorsVec,
-                            SDK::UClass *classType) {
-                SDK::TArray<SDK::AActor *> actors;
-
+            void scanActors(SDK::UWorld* world, std::vector<SDK::TWeakObjectPtr<SDK::AActor>>& actorsVec, SDK::UClass* classType) {
+                SDK::TArray<SDK::AActor*> actors;
                 SDK::UGameplayStatics::GetAllActorsOfClass(world, classType, &actors);
 
-                for (size_t i = 0; i < actors.Num(); i++) {
-                    const auto actor = (T *)actors[i];
-
-                    if (actor->IsFinished_) {
+                for (SDK::AActor* actor : actors) {
+                    if (!actor)
                         continue;
-                    }
-
-                    if (!actor->bUseBPInteractEntries) {
+                    T* watcher = static_cast<T*>(actor);
+                    if (watcher->IsFinished_)
                         continue;
-                    }
-
-                    const auto actorPtr = std::make_shared<T>(*actor);
-                    actorsVec.push_back(actorPtr);
+                    if (!watcher->bUseBPInteractEntries)
+                        continue;
+                    actorsVec.push_back(SDK::TWeakObjectPtr<SDK::AActor>(watcher));
                 }
             }
 
-            std::vector<std::shared_ptr<SDK::AActor>> getActors(SDK::UWorld *world) {
-                std::vector<std::shared_ptr<SDK::AActor>> actorsCopy;
-
+            std::vector<SDK::TWeakObjectPtr<SDK::AActor>> getActors(SDK::UWorld *world) {
+                std::vector<SDK::TWeakObjectPtr<SDK::AActor>> actorsCopy;
                 scanActors<SDK::ABP_EternalWatcher_C>(world, actorsCopy, SDK::ABP_EternalWatcher_C::StaticClass());
-
-                const auto isInnars = world->GetName().contains("Map_sea");
-
+                const bool isInnars = world->GetName().contains("Map_sea");
                 if (isInnars) {
                     scanActors<SDK::ABP_SeaWatcher_C>(world, actorsCopy, SDK::ABP_SeaWatcher_C::StaticClass());
                 }
-
                 return actorsCopy;
             }
         } // namespace Watcher

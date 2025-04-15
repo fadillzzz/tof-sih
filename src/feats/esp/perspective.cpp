@@ -3,43 +3,33 @@
 namespace Feats {
     namespace Esp {
         namespace Perspective {
-            std::vector<std::shared_ptr<SDK::AActor>> getActors(SDK::UWorld *world) {
-                SDK::TArray<SDK::AActor *> actors;
+            std::vector<SDK::TWeakObjectPtr<SDK::AActor>> getActors(SDK::UWorld *world) {
+                SDK::TArray<SDK::AActor*> actors;
+                SDK::UGameplayStatics::GetAllActorsOfClass(world, SDK::ABP_Minigame_PerspectivePuzzle_Base_C::StaticClass(), &actors);
 
-                SDK::UGameplayStatics::GetAllActorsOfClass(
-                    world, SDK::ABP_Minigame_PerspectivePuzzle_Base_C::StaticClass(), &actors);
-
-                std::vector<std::shared_ptr<SDK::AActor>> actorsCopy;
-
-                for (size_t i = 0; i < actors.Num(); i++) {
-                    const auto perspective = (SDK::ABP_Minigame_PerspectivePuzzle_Base_C *)actors[i];
-                    if (perspective->IsSucceed) {
-                        continue;
-                    }
-
-                    const auto perspectivePtr = std::make_shared<SDK::AHottaVisualActor>(*perspective);
-                    actorsCopy.push_back(perspectivePtr);
+                std::vector<SDK::TWeakObjectPtr<SDK::AActor>> actorsCopy;
+                for (SDK::AActor* actor : actors) {
+                    if (!actor)
+                       continue;
+                    SDK::ABP_Minigame_PerspectivePuzzle_Base_C* perspective = static_cast<SDK::ABP_Minigame_PerspectivePuzzle_Base_C*>(actor);
+                    if (perspective->IsSucceed)
+                       continue;
+                    actorsCopy.push_back(SDK::TWeakObjectPtr<SDK::AActor>(actor));
                 }
 
-                const auto isInnars = world->GetName().contains("Map_sea");
-
+                const bool isInnars = world->GetName().contains("Map_sea");
                 if (isInnars) {
-                    SDK::TArray<SDK::AActor *> seaActors;
-                    SDK::UGameplayStatics::GetAllActorsOfClass(
-                        world, SDK::ABP_Minigame_PerspectivePuzzle_Sea_Base_C::StaticClass(), &seaActors);
-
-                    for (size_t i = 0; i < seaActors.Num(); i++) {
-                        const auto perspective = (SDK::ABP_Minigame_PerspectivePuzzle_Sea_Base_C *)seaActors[i];
-
-                        if (perspective->IsSucceed) {
-                            continue;
-                        }
-
-                        const auto perspectivePtr = std::make_shared<SDK::AHottaVisualActor>(*perspective);
-                        actorsCopy.push_back(perspectivePtr);
+                    SDK::TArray<SDK::AActor*> seaActors;
+                    SDK::UGameplayStatics::GetAllActorsOfClass(world, SDK::ABP_Minigame_PerspectivePuzzle_Sea_Base_C::StaticClass(), &seaActors);
+                    for (SDK::AActor* actor : seaActors) {
+                        if (!actor)
+                           continue;
+                        SDK::ABP_Minigame_PerspectivePuzzle_Sea_Base_C* perspective = static_cast<SDK::ABP_Minigame_PerspectivePuzzle_Sea_Base_C*>(actor);
+                        if (perspective->IsSucceed)
+                           continue;
+                        actorsCopy.push_back(SDK::TWeakObjectPtr<SDK::AActor>(actor));
                     }
                 }
-
                 return actorsCopy;
             }
         } // namespace Perspective

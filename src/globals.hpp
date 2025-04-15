@@ -3,6 +3,7 @@ namespace Globals {
     SDK::UHottaGameInstance *getInstance();
     SDK::UWorld *getWorld();
     SDK::UQRSLLocalPlayer *getLocalPlayer();
+    SDK::APlayerController *getPlayerController();
     SDK::AQRSLPlayerCharacter *getCharacter();
 
     template <typename T> T getObject(SDK::UClass *uClass) {

@@ -60,4 +60,17 @@ namespace Globals {
 
         return character;
     }
+
+    SDK::APlayerController *getPlayerController() {
+        const auto localPlayer = getLocalPlayer();
+        if (!localPlayer)
+            return nullptr;
+
+        if (localPlayer->PlayerController == nullptr) {
+            return nullptr;
+        }
+
+        const auto playerController = (SDK::AQRSLPlayerController *)localPlayer->PlayerController;
+        return playerController;
+    }
 } // namespace Globals

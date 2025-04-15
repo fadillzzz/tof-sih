@@ -3,36 +3,31 @@
 namespace Feats {
     namespace Esp {
         namespace Box {
-            std::vector<std::shared_ptr<SDK::AActor>> getActors(SDK::UWorld *world) {
-                SDK::TArray<SDK::AActor *> actors;
-                SDK::UGameplayStatics::GetAllActorsOfClass(world, SDK::AQRSLTreasureBoxActor::StaticClass(),
-                                                           (SDK::TArray<SDK::AActor *> *)&actors);
 
-                std::vector<std::shared_ptr<SDK::AActor>> actorsCopy;
-                const auto isMirroria = world->GetName() == "Vera_city";
+            // Updated getActors: now returns raw pointers instead of copying via std::make_shared.
+            std::vector<SDK::TWeakObjectPtr<SDK::AActor>> getActors(SDK::UWorld *world) {
+                SDK::TArray<SDK::AActor*> actors;
+                SDK::UGameplayStatics::GetAllActorsOfClass(world, SDK::AQRSLTreasureBoxActor::StaticClass(), &actors);
 
-                for (size_t i = 0; i < actors.Num(); i++) {
-                    const auto box = (SDK::AQRSLTreasureBoxActor *)actors[i];
+                std::vector<SDK::TWeakObjectPtr<SDK::AActor>> actorsCopy;
+                const bool isMirroria = (world->GetName() == "Vera_city");
+
+                for (SDK::AActor* actor : actors) {
+                    if (!actor)
+                       continue;
+                    SDK::AQRSLTreasureBoxActor* box = static_cast<SDK::AQRSLTreasureBoxActor*>(actor);
 
                     if (isMirroria) {
-                        if (box->CanOpenParticle.WeakPtr.ObjectIndex == UINT_MAX &&
-                            box->CanOpenParticle.WeakPtr.ObjectSerialNumber == 0) {
+                        if (!box->CanOpenParticle.Get())
                             continue;
-                        }
                     }
-
-                    if (box->bHarvested == true) {
+                    if (box->bHarvested)
                         continue;
-                    }
-
-                    if (*((uint8_t *)box + 0xDC0) == 1) {
+                    if (*((uint8_t*)box + 0xDC0) == 1)
                         continue;
-                    }
 
-                    const auto boxPtr = std::make_shared<SDK::AQRSLTreasureBoxActor>(*box);
-                    actorsCopy.push_back(boxPtr);
+                    actorsCopy.push_back(SDK::TWeakObjectPtr<SDK::AActor>(box));
                 }
-
                 return actorsCopy;
             }
         } // namespace Box

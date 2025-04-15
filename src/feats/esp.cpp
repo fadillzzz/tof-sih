@@ -14,158 +14,308 @@
 #include "esp/watcher.hpp"
 #include "hotkey.hpp"
 #include "minhook/include/MinHook.h"
+#include <iterator>
+#include <shared_mutex>
 
 namespace Feats {
     namespace Esp {
         Config::field<bool> enabled;
         Config::field<size_t> scanDelay;
-        bool shuttingDown = false;
-        std::mutex actorMutex;
-        std::vector<SDK::FVector> actorLocations;
-        std::vector<SDK::FString> actorNames;
+
+        std::atomic<bool> shuttingDown{false};
+        std::atomic<bool> scannerRunning{false};
+
+        std::shared_mutex actorMutex;
+
+        struct ActorData {
+            std::vector<SDK::FVector> locations;
+            std::vector<SDK::FString> names;
+        };
+
+        ActorData currentActorData;
+        ActorData scanningActorData;
+
+        std::thread scannerThread;
 
         typedef void (*RenderCanvas)(SDK::UGameViewportClient *, SDK::UCanvas *);
         RenderCanvas oRenderCanvas = nullptr;
 
-        SDK::UFont *font = SDK::UObject::FindObject<SDK::UFont>("Font RobotoDistanceField.RobotoDistanceField");
+        SDK::UFont *font = nullptr;
+
+        bool hookInstalled = false;
 
         void scanActors() {
+            scannerRunning = true;
+
             while (!shuttingDown) {
-                const auto start = std::chrono::high_resolution_clock::now();
+                auto start = std::chrono::high_resolution_clock::now();
 
                 if (*enabled) {
-                    const auto world = Globals::getWorld();
+                    SDK::UWorld *world = Globals::getWorld();
+                    if (!world) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(*scanDelay));
+                        continue;
+                    }
 
-                    if (world != nullptr) {
-                        std::vector<std::shared_ptr<SDK::AActor>> scannedActors;
+                    scanningActorData.locations.clear();
+                    scanningActorData.names.clear();
 
-                        const auto boxes = Box::getActors(world);
-                        std::ranges::move(boxes, std::back_inserter(scannedActors));
-                        const auto nucleus = Nucleus::getActors(world);
-                        std::ranges::move(nucleus, std::back_inserter(scannedActors));
-                        const auto kerosenia = Kerosenia::getActors(world);
-                        std::ranges::move(kerosenia, std::back_inserter(scannedActors));
-                        const auto perspective = Perspective::getActors(world);
-                        std::ranges::move(perspective, std::back_inserter(scannedActors));
-                        const auto watcher = Watcher::getActors(world);
-                        std::ranges::move(watcher, std::back_inserter(scannedActors));
-                        const auto shroom = Shroom::getActors(world);
-                        std::ranges::move(shroom, std::back_inserter(scannedActors));
-                        const auto dandelion = Dandelion::getActors(world);
-                        std::ranges::move(dandelion, std::back_inserter(scannedActors));
-                        const auto chowchow = Chowchow::getActors(world);
-                        std::ranges::move(chowchow, std::back_inserter(scannedActors));
-                        const auto sponge = Sponge::getActors(world);
-                        std::ranges::move(sponge, std::back_inserter(scannedActors));
-                        const auto particleFish = ParticleFish::getActors(world);
-                        std::ranges::move(particleFish, std::back_inserter(scannedActors));
-                        const auto fishBaiter = FishBaiter::getActors(world);
-                        std::ranges::move(fishBaiter, std::back_inserter(scannedActors));
+                    std::vector<SDK::TWeakObjectPtr<SDK::AActor>> scannedActors;
 
-                        const std::lock_guard<std::mutex> lock(actorMutex);
-                        actorLocations.clear();
-                        actorNames.clear();
-                        for (auto &actor : scannedActors) {
-                            actorLocations.push_back(actor->K2_GetActorLocation());
-                            actorNames.push_back(SDK::UKismetStringLibrary::Conv_NameToString(actor->Name));
+                    auto collectActors = [&scannedActors](const auto &actors) {
+                        if (!actors.empty()) {
+                            scannedActors.insert(scannedActors.end(), std::make_move_iterator(actors.begin()),
+                                                 std::make_move_iterator(actors.end()));
                         }
+                    };
+
+                    try {
+                        collectActors(Box::getActors(world));
+                        collectActors(Nucleus::getActors(world));
+                        collectActors(Kerosenia::getActors(world));
+                        collectActors(Perspective::getActors(world));
+                        collectActors(Watcher::getActors(world));
+                        collectActors(Shroom::getActors(world));
+                        collectActors(Dandelion::getActors(world));
+                        collectActors(Chowchow::getActors(world));
+                        collectActors(Sponge::getActors(world));
+                        collectActors(ParticleFish::getActors(world));
+                        collectActors(FishBaiter::getActors(world));
+                    } catch (const std::exception &e) {
+                        Logger::warning(std::format("Error occured while scanning for actors for ESP: {}", e.what()));
+                        continue;
+                    }
+
+                    for (auto &actor : scannedActors) {
+                        if (actor) {
+                            try {
+                                SDK::FVector location = actor->K2_GetActorLocation();
+                                scanningActorData.locations.push_back(location);
+                                scanningActorData.names.push_back(
+                                    SDK::UKismetStringLibrary::Conv_NameToString(actor->Name));
+                            } catch (const std::exception &e) {
+                                Logger::warning(std::format(
+                                    "Error occured while getting actor location or name for ESP: {}", e.what()));
+                                continue;
+                            }
+                        }
+                    }
+
+                    {
+                        std::unique_lock<std::shared_mutex> lock(actorMutex);
+                        currentActorData.locations.swap(scanningActorData.locations);
+                        currentActorData.names.swap(scanningActorData.names);
                     }
                 }
 
-                const auto end = std::chrono::high_resolution_clock::now();
+                auto end = std::chrono::high_resolution_clock::now();
+                auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+                size_t delayMs = *scanDelay;
+                if (elapsedMs < delayMs) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(delayMs - elapsedMs));
+                }
+            }
 
-                if (end - start < std::chrono::milliseconds(*scanDelay)) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(*scanDelay) - (end - start));
+            scannerRunning = false;
+        }
+
+        void hRenderCanvas(SDK::UGameViewportClient *viewport, SDK::UCanvas *canvas) {
+            // call original func first
+            if (oRenderCanvas) {
+                oRenderCanvas(viewport, canvas);
+            }
+
+            // render
+            if (*enabled && canvas) {
+                SDK::APlayerController *playerController = Globals::getPlayerController();
+                if (!playerController) {
+                    return;
+                }
+
+                SDK::AQRSLPlayerCharacter *character = Globals::getCharacter();
+                if (!character) {
+                    return;
+                }
+
+                if (!font) {
+                    font = SDK::UObject::FindObject<SDK::UFont>("Font RobotoDistanceField.RobotoDistanceField");
+                    if (!font) {
+                        // Shouldn't really happen, but just in case
+                        return;
+                    }
+                }
+
+                SDK::FVector characterLocation = character->K2_GetActorLocation();
+                SDK::FVector2D characterScreenLocation;
+
+                if (!playerController->ProjectWorldLocationToScreen(characterLocation, &characterScreenLocation,
+                                                                    false)) {
+                    return;
+                }
+
+                std::vector<SDK::FVector> locations;
+                std::vector<SDK::FString> names;
+
+                {
+                    std::shared_lock<std::shared_mutex> lock(actorMutex);
+                    locations = currentActorData.locations;
+                    names = currentActorData.names;
+                }
+
+                if (locations.size() != names.size()) {
+                    return;
+                }
+
+                for (size_t i = 0; i < locations.size(); i++) {
+                    SDK::FVector2D screenLocation;
+                    if (!playerController->ProjectWorldLocationToScreen(locations[i], &screenLocation, false))
+                        continue;
+
+                    canvas->K2_DrawLine(characterScreenLocation, screenLocation, 1.0f,
+                                        SDK::FLinearColor(1.f, 0.f, 0.f, 1.f));
+
+                    canvas->K2_DrawText(font, names[i], screenLocation, SDK::FVector2D(1.f, 1.f),
+                                        SDK::FLinearColor(1.f, 0.f, 0.f, 1.f), 1.0f,
+                                        SDK::FLinearColor(0.f, 0.f, 0.f, 1.f), SDK::FVector2D(0.f, 0.f), true, true,
+                                        true, SDK::FLinearColor(1.f, 1.f, 1.f, 1.f));
+
+                    float distance = characterLocation.GetDistanceToInMeters(locations[i]);
+                    wchar_t distanceBuffer[64];
+                    swprintf(distanceBuffer, 64, L"%.2fm", distance);
+                    SDK::FString distanceString = SDK::UKismetStringLibrary::Conv_NameToString(
+                        SDK::UKismetStringLibrary::Conv_StringToName(distanceBuffer));
+
+                    SDK::FVector2D distanceTextLocation = screenLocation;
+                    distanceTextLocation.Y += font->EmScale / 2.0f;
+                    canvas->K2_DrawText(font, distanceString, distanceTextLocation, SDK::FVector2D(1.f, 1.f),
+                                        SDK::FLinearColor(0.f, 0.f, 1.f, 1.f), 1.0f,
+                                        SDK::FLinearColor(0.f, 0.f, 0.f, 1.f), SDK::FVector2D(0.f, 0.f), true, true,
+                                        true, SDK::FLinearColor(1.f, 1.f, 1.f, 1.f));
                 }
             }
         }
 
-        void hRenderCanvas(SDK::UGameViewportClient *viewport, SDK::UCanvas *canvas) {
-            if (*enabled) {
-                const auto character = Globals::getCharacter();
-
-                if (character != nullptr) {
-                    const auto playerController = character->GetHottaPlayerController();
-                    const auto characterLocation = character->K2_GetActorLocation();
-                    SDK::FVector2D characterScreenLocation;
-
-                    playerController->ProjectWorldLocationToScreen(characterLocation, &characterScreenLocation, false);
-
-                    const std::lock_guard<std::mutex> lock(actorMutex);
-                    for (size_t i = 0; i < actorLocations.size(); i++) {
-                        SDK::FVector2D screenLocation;
-                        if (playerController->ProjectWorldLocationToScreen(actorLocations[i], &screenLocation, false)) {
-                            canvas->K2_DrawLine(characterScreenLocation, screenLocation, 1.0f,
-                                                SDK::FLinearColor(255, 0, 0, 255));
-
-                            canvas->K2_DrawText(font, actorNames[i], screenLocation, SDK::FVector2D(1.f, 1.f),
-                                                SDK::FLinearColor(255, 0, 0, 255), 1.f, SDK::FLinearColor(0, 0, 0, 255),
-                                                SDK::FVector2D(0, 0), true, true, true,
-                                                SDK::FLinearColor(255, 255, 255, 255));
-
-                            const auto distance = characterLocation.GetDistanceToInMeters(actorLocations[i]);
-                            // Constructing FString directly from wchar_t * sometimes causes
-                            // garbage text, so we construct FName first then convert it to FString.
-                            // This might be an issue with the UnrealContainers class not zero-ing memory or something.
-                            const auto distanceString = SDK::UKismetStringLibrary::Conv_NameToString(
-                                SDK::UKismetStringLibrary::Conv_StringToName(
-                                    std::format(L"{:.2f}m", distance).c_str()));
-
-                            SDK::FVector2D distanceLocation = screenLocation;
-                            distanceLocation.Y += font->EmScale / 2;
-                            canvas->K2_DrawText(font, distanceString, distanceLocation, SDK::FVector2D(1.f, 1.f),
-                                                SDK::FLinearColor(0, 0, 255, 255), 1.f, SDK::FLinearColor(0, 0, 0, 255),
-                                                SDK::FVector2D(0, 0), true, true, true,
-                                                SDK::FLinearColor(255, 255, 255, 255));
-                        }
-                    }
-                }
+        bool installHook() {
+            if (hookInstalled) {
+                return true;
             }
 
-            oRenderCanvas(viewport, canvas);
+            SDK::UHottaGameEngine *engine = Globals::getEngine();
+            if (!engine) {
+                return false;
+            }
+
+            SDK::UGameViewportClient *viewport = engine->GameViewport;
+            if (!viewport || !viewport->VTable) {
+                return false;
+            }
+
+            uintptr_t addr = *(uintptr_t *)((uintptr_t)(viewport->VTable) + 0x318);
+            if (!addr) {
+                return false;
+            }
+
+            if (MH_CreateHook((LPVOID)addr, hRenderCanvas, (LPVOID *)&oRenderCanvas) != MH_OK) {
+                return false;
+            }
+
+            if (MH_EnableHook((LPVOID)addr) != MH_OK) {
+                MH_RemoveHook((LPVOID)addr);
+                return false;
+            }
+
+            hookInstalled = true;
+            return true;
+        }
+
+        bool removeHook() {
+            if (!hookInstalled) {
+                return true;
+            }
+
+            SDK::UHottaGameEngine *engine = Globals::getEngine();
+            if (!engine) {
+                return false;
+            }
+
+            SDK::UGameViewportClient *viewport = engine->GameViewport;
+            if (!viewport || !viewport->VTable) {
+                return false;
+            }
+
+            uintptr_t addr = *(uintptr_t *)((uintptr_t)(viewport->VTable) + 0x318);
+            if (!addr) {
+                return false;
+            }
+
+            bool success = true;
+            if (MH_DisableHook((LPVOID)addr) != MH_OK) {
+                success = false;
+            }
+
+            if (MH_RemoveHook((LPVOID)addr) != MH_OK) {
+                success = false;
+            }
+
+            hookInstalled = false;
+            return success;
         }
 
         void init() {
             enabled = Config::get<bool>(confEnabled, false);
             scanDelay = Config::get<size_t>(confScanDelay, 1000);
 
-            const auto engine = Globals::getEngine();
-            const auto viewport = engine->GameViewport;
+            font = SDK::UObject::FindObject<SDK::UFont>("Font RobotoDistanceField.RobotoDistanceField");
 
-            if (viewport != nullptr) {
-                const auto addr = *(uintptr_t *)((uintptr_t)(viewport->VTable) + 0x318);
-                MH_CreateHook((LPVOID)addr, hRenderCanvas, (LPVOID *)&oRenderCanvas);
-                MH_EnableHook((LPVOID)addr);
-
-                std::thread scanner(scanActors);
-                scanner.detach();
+            if (installHook()) {
+                if (!scannerRunning) {
+                    shuttingDown = false;
+                    scannerThread = std::thread(scanActors);
+                }
             }
         }
 
         void shutdown() {
             shuttingDown = true;
-            const auto engine = Globals::getEngine();
-            const auto viewport = engine->GameViewport;
 
-            if (viewport != nullptr) {
-                const auto addr = *(uintptr_t *)((uintptr_t)(viewport->VTable) + 0x318);
-                MH_DisableHook((LPVOID)addr);
-                MH_RemoveHook((LPVOID)addr);
+            if (scannerThread.joinable()) {
+                for (int i = 0; i < 20 && scannerRunning; i++) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+
+                if (scannerRunning) {
+                    scannerThread.detach();
+                } else {
+                    scannerThread.join();
+                }
             }
+
+            removeHook();
         }
 
         void tick() {
             if (Feats::Hotkey::hotkeyPressed(confToggleEnabled)) {
-                enabled = !*enabled;
+                bool newState = !*enabled;
+                enabled = newState;
+
+                if (newState && !scannerRunning && !scannerThread.joinable()) {
+                    shuttingDown = false;
+                    scannerThread = std::thread(scanActors);
+                }
             }
         }
 
         void menu() {
-            ImGui::Checkbox("ESP", &enabled);
+            if (ImGui::Checkbox("ESP", &enabled)) {
+                if (*enabled && !scannerRunning && !scannerThread.joinable()) {
+                    shuttingDown = false;
+                    scannerThread = std::thread(scanActors);
+                }
+            }
+
             ImGui::SameLine();
             ImGui::InputScalar("Scan delay (ms)", ImGuiDataType_U64, &scanDelay);
-            ImGui::Text("Do not use extremely low value for the scan delay. It will cause performance issues and could "
-                        "lead to the game crashing. Recommended value is 1000ms.");
+            ImGui::Text("Recommended value is 1000ms. Extremely low values may affect game performance.");
         }
     } // namespace Esp
 } // namespace Feats
