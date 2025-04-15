@@ -3,22 +3,21 @@
 namespace Feats {
     namespace Esp {
         namespace FishBaiter {
-            std::vector<std::shared_ptr<SDK::AActor>> getActors(SDK::UWorld *world) {
-                std::vector<std::shared_ptr<SDK::AActor>> actors;
+            std::vector<SDK::TWeakObjectPtr<SDK::AActor>> getActors(SDK::UWorld *world) {
+                std::vector<SDK::TWeakObjectPtr<SDK::AActor>> actors;
 
-                SDK::TArray<SDK::ABP_FishBall_Base_C *> fishBallActors;
+                SDK::TArray<SDK::ABP_FishBall_Base_C*> fishBallActors;
                 SDK::UGameplayStatics::GetAllActorsOfClass(world, SDK::ABP_FishBall_Base_C::StaticClass(),
-                                                           (SDK::TArray<SDK::AActor *> *)&fishBallActors);
+                                                           (SDK::TArray<SDK::AActor*>*)&fishBallActors);
 
-                for (auto &fishBallActor : fishBallActors) {
-                    if (fishBallActor->Did0Finished && fishBallActor->Did1Finished && fishBallActor->Did2Finished &&
-                        fishBallActor->Yahaha_SpawnManager->Children.Num() == 0) {
+                for (SDK::ABP_FishBall_Base_C* fishBall : fishBallActors) {
+                    if (!fishBall)
                         continue;
-                    }
-
-                    actors.push_back(std::make_shared<SDK::AActor>(*fishBallActor));
+                    if (fishBall->Did0Finished && fishBall->Did1Finished && fishBall->Did2Finished &&
+                        fishBall->Yahaha_SpawnManager->Children.Num() == 0)
+                        continue;
+                    actors.push_back(SDK::TWeakObjectPtr<SDK::AActor>(fishBall));
                 }
-
                 return actors;
             }
         } // namespace FishBaiter
