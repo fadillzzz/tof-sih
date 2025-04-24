@@ -4,6 +4,8 @@ namespace Feats {
         const std::string confEnabled = confPrefix + "/enabled";
         const std::string confToggleEnabled = confPrefix + "/toggleEnabled";
         const std::string confScanDelay = confPrefix + "/scanDelay";
+        const std::string confdisableDistanceLimit = confPrefix + "/disableDistanceLimit";
+        const std::string confMaxDistance = confPrefix + "/maxDistance";
 
         // visual drawing
         const std::string confDrawBox = confPrefix + "/drawBox";
