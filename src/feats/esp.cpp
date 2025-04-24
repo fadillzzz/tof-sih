@@ -16,11 +16,14 @@
 #include "minhook/include/MinHook.h"
 #include <atomic>
 #include <shared_mutex>
+#include <limits>
 
 namespace Feats {
     namespace Esp {
         Config::field<bool> enabled;
         Config::field<size_t> scanDelay;
+        Config::field<bool> disableDistanceLimit;
+        Config::field<float> maxDistance;
         
         Config::field<bool> drawBox;
         Config::field<bool> drawTracer;
@@ -70,6 +73,65 @@ namespace Feats {
         SDK::UFont* font = nullptr;
 
         bool hookInstalled = false;
+
+        static void ForceAlwaysRelevantClasses() {
+            SDK::UHottaGameEngine* engine = Globals::getEngine();
+            if (!engine) return;
+
+            SDK::UWorld* world = Globals::getWorld();
+            if (!world) return;
+
+            SDK::UNetDriver* net = world->NetDriver;
+            if (!net || !net->ReplicationDriver) return;
+
+            SDK::UReplicationGraph* baseGraph = 
+                static_cast<SDK::UReplicationGraph*>(net->ReplicationDriver);
+            if (!baseGraph) return;
+
+            SDK::UQRSLReplicationGraph* graph = 
+                static_cast<SDK::UQRSLReplicationGraph*>(baseGraph);
+            if (!graph) return;
+
+            static SDK::UClass* classesToForce[] = {
+                SDK::AQRSLTreasureBoxActor::StaticClass(),
+                SDK::ABP_MiniGame_FlyFlower_001_C::StaticClass(),
+                SDK::ABP_MiniGame_ThrowFlower_002_C::StaticClass(),
+                SDK::ABP_Minigame_PerspectivePuzzle_Base_C::StaticClass(),
+                SDK::ABP_Minigame_PerspectivePuzzle_Sea_Base_C::StaticClass(),
+                SDK::ABP_EternalWatcher_C::StaticClass(),
+                SDK::ABP_SeaWatcher_C::StaticClass(),
+                SDK::ABP_Minigame_PerspectivePuzzle_Base_C::StaticClass(),
+                SDK::ABP_Minigame_PerspectivePuzzle_Sea_Base_C::StaticClass(),
+                SDK::ABP_Fire_MiniGame_BPBase_C::StaticClass(),
+                SDK::ABP_MiniGame_FireLink_Vera_C::StaticClass(),
+                SDK::ABP_FishBall_Base_C::StaticClass(),
+                SDK::ABP_ParticleFish_Base_C::StaticClass(),
+                SDK::ABP_SeaSponge_Base_C::StaticClass(),
+                SDK::ABP_LitMushroom_Manager_C::StaticClass(),
+                SDK::ABP_Manager_LumenMushroom_C::StaticClass(),
+                SDK::AVeraCity_Gem_BP_C::StaticClass(),
+                SDK::ABP_Harvest_Gem_Base_C::StaticClass(),
+                SDK::ABP_SeaSponge_Base_C::StaticClass()
+            };
+
+            for (SDK::UClass* cls : classesToForce) {
+                if (cls) {
+                    bool alreadyExists = false;
+
+                    for (int i = 0; i < graph->AlwaysRelevantClasses.Num(); i++) {
+                        if (graph->AlwaysRelevantClasses[i] == cls) {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+
+                    if (!alreadyExists) {
+                        graph->AlwaysRelevantClasses.Add(cls);
+                    }
+                }
+            }
+        }
+
 
         void HelpMarker(const char* desc) {
             ImGui::TextDisabled("(?)");
@@ -134,17 +196,47 @@ namespace Feats {
                     if (*showFishBaiter) actorTypes.push_back({FishBaiter::getActors(world), "FishBaiter"});
 
                     try {
+                        SDK::AQRSLPlayerCharacter* character = Globals::getCharacter();
+                        SDK::FVector characterLocation;
+
+                        if (character) {
+                            characterLocation = character->K2_GetActorLocation();
+                        }
+
                         for (const auto& typeInfo : actorTypes) {
                             for (auto& actor : typeInfo.actors) {
                                 if (actor) {
                                     try {
-                                        SDK::FVector location = actor->K2_GetActorLocation();
+                                        SDK::FVector location;
+                                        SDK::FVector extent;
+
+                                        actor->GetActorBounds(true, &location, &extent, false);
+
+                                        if (location == SDK::FVector(0, 0, 0)) {
+                                            location = actor->K2_GetActorLocation();
+
+                                            if (typeInfo.type == "Shroom" || typeInfo.type == "Nucleus") {
+                                                // need to add offsets based on actor type
+                                            }
+                                        } else {
+                                            if (typeInfo.type == "Box") {
+                                                location.Z += extent.Z;
+                                            }
+                                        }
+
+                                        if (!*disableDistanceLimit && character) {
+                                            float distance = characterLocation.GetDistanceToInMeters(location);
+                                            if (distance > *maxDistance) {
+                                                continue;
+                                            }
+                                        }
+
                                         scanningActorData.locations.push_back(location);
                                         scanningActorData.names.push_back(SDK::UKismetStringLibrary::Conv_NameToString(actor->Name));
                                         scanningActorData.types.push_back(typeInfo.type);
                                     }
                                     catch (...) {
-                                        // skip if execution
+                                        // skip if exec fails
                                         continue;
                                     }
                                 }
@@ -171,7 +263,7 @@ namespace Feats {
                     std::this_thread::sleep_for(std::chrono::milliseconds(delayMs - elapsedMs));
                 }
             }
-            
+
             scannerRunning = false;
         }
 
@@ -201,20 +293,19 @@ namespace Feats {
             if (oRenderCanvas) {
                 oRenderCanvas(viewport, canvas);
             }
-            
-            // Render
+
+            // render
             if (*enabled && canvas) {
                 SDK::APlayerController* playerController = Globals::getPlayerController();
                 if (!playerController) {
                     return;
                 }
-                
+
                 SDK::AQRSLPlayerCharacter* character = Globals::getCharacter();
                 if (!character) {
                     return;
                 }
 
-                // Validation
                 if (!font) {
                     font = SDK::UObject::FindObject<SDK::UFont>("Font RobotoDistanceField.RobotoDistanceField");
                     if (!font) {
@@ -222,102 +313,86 @@ namespace Feats {
                     }
                 }
 
-                SDK::FVector characterLocation = character->K2_GetActorLocation();
-                SDK::FVector2D characterScreenLocation;
+                float screenW  = canvas->ClipX;
+                float screenH  = canvas->ClipY;
+                float originX  = canvas->OrgX;
+                float originY  = canvas->OrgY;
 
-                if (!playerController->ProjectWorldLocationToScreen(characterLocation, &characterScreenLocation, false)) {
-                    return;
+                SDK::FVector2D screenCenter(
+                    originX + screenW * 0.5f,
+                    originY + screenH * 0.5f
+                );
+
+                if (screenW <= 0 || screenH <= 0) {
+                    screenW = (float)canvas->SizeX;
+                    screenH = (float)canvas->SizeY;
+                    screenCenter = SDK::FVector2D(screenW * 0.5f, screenH * 0.5f);
                 }
 
-                std::vector<SDK::FVector> locations;
-                std::vector<SDK::FString> names;
-                std::vector<std::string> types;
-                
+                SDK::FVector characterLocation = character->K2_GetActorLocation();
+                std::vector<SDK::FVector>       locations;
+                std::vector<SDK::FString>       names;
+                std::vector<std::string>        types;
                 {
                     std::shared_lock<std::shared_mutex> lock(actorMutex);
                     locations = currentActorData.locations;
-                    names = currentActorData.names;
-                    types = currentActorData.types;
+                    names     = currentActorData.names;
+                    types     = currentActorData.types;
                 }
-                
-                if (locations.size() != names.size() || locations.size() != types.size()) {
-                    return;
-                }
-                
+
                 for (size_t i = 0; i < locations.size(); i++) {
-                    if (!shouldShowActorType(types[i])) {
-                        continue;
-                    }
-                    
-                    SDK::FVector2D screenLocation;
-                    if (!playerController->ProjectWorldLocationToScreen(locations[i], &screenLocation, false))
+                    if (!shouldShowActorType(types[i])) continue;
+
+                    SDK::FVector2D screenLoc;
+                    if (!playerController->ProjectWorldLocationToScreen(locations[i], &screenLoc, false))
                         continue;
 
                     if (*drawTracer) {
-                        auto tracerColorRGBA = SDK::FLinearColor(
-                            (*tracerColor)[0],
-                            (*tracerColor)[1],
-                            (*tracerColor)[2],
-                            (*tracerColor)[3]
+                        auto tc = SDK::FLinearColor(
+                            (*tracerColor)[0], (*tracerColor)[1],
+                            (*tracerColor)[2], (*tracerColor)[3]
                         );
-                        
-                        canvas->K2_DrawLine(characterScreenLocation, screenLocation, *tracerWidth, tracerColorRGBA);
+                        canvas->K2_DrawLine(screenCenter, screenLoc, *tracerWidth, tc);
+                    }
+
+                    if (*drawBox) {
+                        drawBoundingBox(canvas, screenLoc, 30.0f);
+                    }
+
+                    if (*drawName) {
+                        auto txtC = SDK::FLinearColor(
+                            (*textColor)[0], (*textColor)[1],
+                            (*textColor)[2], (*textColor)[3]
+                        );
+                        canvas->K2_DrawText(
+                            font, names[i], screenLoc,
+                            SDK::FVector2D(*fontSize, *fontSize),
+                            txtC, 1.0f,
+                            SDK::FLinearColor(0,0,0,1), SDK::FVector2D(0,0),
+                            true, true, true, SDK::FLinearColor(0,0,0,1)
+                        );
                     }
                     
-                    // draw box
-                    if (*drawBox) {
-                        drawBoundingBox(canvas, screenLocation, 30.0f); // box size
-                    }
-
-                    // draw text
-                    if (*drawName) {
-                        auto textColorRGBA = SDK::FLinearColor(
-                            (*textColor)[0],
-                            (*textColor)[1],
-                            (*textColor)[2],
-                            (*textColor)[3]
-                        );
-                        
-                        canvas->K2_DrawText(font,
-                                           names[i],
-                                           screenLocation,
-                                           SDK::FVector2D(*fontSize, *fontSize),
-                                           textColorRGBA,
-                                           1.0f,
-                                           SDK::FLinearColor(0.f, 0.f, 0.f, 1.0f),
-                                           SDK::FVector2D(0.f, 0.f),
-                                           true, true, true,
-                                           SDK::FLinearColor(0.f, 0.f, 0.f, 1.0f));
-                    }
-
-                    // draw distance
                     if (*drawDistance) {
-                        float distance = characterLocation.GetDistanceToInMeters(locations[i]);
-                        wchar_t distanceBuffer[64];
-                        swprintf(distanceBuffer, 64, L"%.2fm", distance);
-                        SDK::FString distanceString = SDK::UKismetStringLibrary::Conv_NameToString(
-                            SDK::UKismetStringLibrary::Conv_StringToName(distanceBuffer));
-
-                        SDK::FVector2D distanceTextLocation = screenLocation;
-                        distanceTextLocation.Y += font->EmScale * (*fontSize) / 2.0f;
-                        
-                        auto textColorRGBA = SDK::FLinearColor(
-                            (*textColor)[0],
-                            (*textColor)[1],
-                            (*textColor)[2],
-                            (*textColor)[3]
+                        float dist = characterLocation.GetDistanceToInMeters(locations[i]);
+                        wchar_t buf[64];
+                        swprintf(buf, 64, L"%.2fm", dist);
+                        SDK::FString ds = SDK::UKismetStringLibrary::Conv_NameToString(
+                            SDK::UKismetStringLibrary::Conv_StringToName(buf)
                         );
-                        
-                        canvas->K2_DrawText(font,
-                                           distanceString,
-                                           distanceTextLocation,
-                                           SDK::FVector2D(*fontSize, *fontSize),
-                                           textColorRGBA,
-                                           1.0f,
-                                           SDK::FLinearColor(0.f, 0.f, 0.f, 1.0f),
-                                           SDK::FVector2D(0.f, 0.f),
-                                           true, true, true,
-                                           SDK::FLinearColor(0.f, 0.f, 0.f, 1.0f));
+                        SDK::FVector2D dpos = screenLoc;
+                        dpos.Y += font->EmScale * (*fontSize) * 0.5f;
+                        auto txtC = SDK::FLinearColor(
+                            (*textColor)[0], (*textColor)[1],
+                            (*textColor)[2], (*textColor)[3]
+                        );
+                        canvas->K2_DrawText(
+                            font, ds, dpos,
+                            SDK::FVector2D(*fontSize, *fontSize),
+                            txtC, 1.0f,
+                            SDK::FLinearColor(0,0,0,1), SDK::FVector2D(0,0),
+                            true, true, true, SDK::FLinearColor(0,0,0,1)
+                        );
                     }
                 }
             }
@@ -406,6 +481,9 @@ namespace Feats {
             boxColor = {1.0f, 1.0f, 1.0f, 1.0f};  // White
             tracerColor = {1.0f, 1.0f, 1.0f, 1.0f}; // White
             textColor = {1.0f, 1.0f, 1.0f, 1.0f};   // White
+
+            disableDistanceLimit = false;
+            maxDistance = 150.0f;
             
             showSupplyBox = true;
             showNucleus = true;
@@ -423,6 +501,8 @@ namespace Feats {
         void init() {
             enabled = Config::get<bool>(confEnabled, false);
             scanDelay = Config::get<size_t>(confScanDelay, 1000);
+            disableDistanceLimit = Config::get<bool>(confdisableDistanceLimit, false);
+            maxDistance = Config::get<float>(confMaxDistance, 150.0f);
             
             drawBox = Config::get<bool>(confDrawBox, true);
             drawTracer = Config::get<bool>(confDrawTracer, true);
@@ -455,6 +535,8 @@ namespace Feats {
             showFishBaiter = Config::get<bool>(confShowFishBaiter, true);
             
             font = SDK::UObject::FindObject<SDK::UFont>("Font RobotoDistanceField.RobotoDistanceField");
+            
+            ForceAlwaysRelevantClasses();
             
             if (installHook()) {
                 if (!scannerRunning) {
@@ -505,6 +587,22 @@ namespace Feats {
             ImGui::SameLine();
             ImGui::InputScalar("Scan delay (ms)", ImGuiDataType_U64, &scanDelay);
             ImGui::Text("Recommended value is 1000ms. Extremely low values may affect game performance.");
+
+            ImGui::Checkbox("Highest Possible Distance", &disableDistanceLimit);
+            ImGui::SameLine();
+            HelpMarker("If enabled, objects will be shown regardless of distance. Disables the Maximum Distance slider.");
+
+            if (*disableDistanceLimit) {
+                maxDistance = (std::numeric_limits<float>::max)();
+                ImGui::BeginDisabled();
+                ImGui::SliderFloat("Max Distance (meters)", &maxDistance, 150.0f, 1000.0f, "%.0f m");
+                ImGui::EndDisabled();
+            } else {
+                ImGui::SliderFloat("Max Distance (meters)", &maxDistance, 150.0f, 1000.0f, "%.0f m");
+            }
+            
+            ImGui::SameLine();
+            HelpMarker("Maximum distance to show objects.");
 
             if (ImGui::Button("Reset To Default")) {
                 resetToDefaults();
